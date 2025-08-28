@@ -557,7 +557,7 @@ mcp.tool(get_decision_guidance)
 
 # --- Streamable HTTP transport (ASGI app) ---
 # Expose this as the root app; serve it with uvicorn/gunicorn.
-app = mcp.streamable_http_app()
+app = mcp.http_app(path="/")
 
 def main():
     """Run the MCP server over Streamable HTTP using uvicorn."""
