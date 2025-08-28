@@ -160,7 +160,14 @@ def get_phase_guidance(phase_number: int) -> Dict[str, Any]:
                 "   - Determine if existing schema is sufficient or needs creation/modification",
                 "   - If no schema exists, create one based on data analysis",
                 "   - Check if existing schema covers all data concepts",
-                "   - Extend schema if missing concepts are identified"
+                "   - Extend schema if missing concepts are identified",
+                "",
+                "1.4 Schema Configuration Planning:",
+                "   - Identify entities and relationships in your data",
+                "   - Map data concepts to Biolink model or other ontologies",
+                "   - Plan schema_config.yaml structure in config/ directory",
+                "   - Consider inheritance patterns (explicit vs implicit)",
+                "   - Plan for synonym mappings if needed"
             ],
             "code_examples": {
                 "resource_analysis": """
@@ -186,12 +193,44 @@ def assess_schema_requirements(data_analysis, existing_schema=None):
         return extend_schema(existing_schema, missing_concepts)
     
     return existing_schema
+""",
+                "schema_configuration_planning": """
+def plan_schema_configuration(data_analysis):
+    # Create schema_config.yaml structure
+    schema_config = {
+        'entities': {},
+        'relationships': {},
+        'ontology_mappings': {}
+    }
+    
+    # Map data entities to ontology classes
+    for entity in data_analysis['entities']:
+        ontology_class = map_to_ontology(entity)
+        schema_config['entities'][entity['name']] = {
+            'represented_as': 'node',
+            'preferred_id': entity['id_source'],
+            'input_label': entity['field_name'],
+            'is_a': ontology_class
+        }
+    
+    # Map relationships
+    for rel in data_analysis['relationships']:
+        schema_config['relationships'][rel['name']] = {
+            'represented_as': 'edge',
+            'preferred_id': rel['id_source'],
+            'input_label': rel['field_name'],
+            'subject': rel['subject_entity'],
+            'object': rel['object_entity']
+        }
+    
+    return schema_config
 """
             },
             "outputs_expected": [
                 "Data source type identification",
                 "Structure analysis report", 
-                "Schema requirements assessment"
+                "Schema requirements assessment",
+                "Schema configuration plan"
             ]
         },
         2: {
@@ -209,7 +248,15 @@ def assess_schema_requirements(data_analysis, existing_schema=None):
                 "   - Determine primary extraction method",
                 "   - Identify fallback methods",
                 "   - Design error handling approach",
-                "   - Create validation rules"
+                "   - Create validation rules",
+                "",
+                "2.3 Schema Configuration Implementation:",
+                "   - Create config/schema_config.yaml file",
+                "   - Implement entity mappings with proper ontology grounding",
+                "   - Define relationship mappings with subject/object specifications",
+                "   - Configure inheritance patterns (explicit vs implicit)",
+                "   - Set up synonym mappings if needed",
+                "   - Validate schema configuration against BioCypher standards"
             ],
             "code_examples": {
                 "architecture_decision": """
@@ -244,11 +291,53 @@ def design_extraction_strategy(data_analysis):
         'validation_rules': create_validation_rules(data_analysis)
     }
     return strategy
+""",
+                "schema_configuration_implementation": """
+# Example schema_config.yaml structure
+def create_schema_configuration(data_analysis):
+    schema_config = {
+        # Entity mappings
+        'protein': {
+            'represented_as': 'node',
+            'preferred_id': 'uniprot',
+            'input_label': 'protein_id',
+            'is_a': 'polypeptide'
+        },
+        
+        # Multi-source entity
+        'pathway': {
+            'represented_as': 'node',
+            'preferred_id': ['reactome', 'wikipathways'],
+            'input_label': ['react', 'wiki'],
+            'is_a': 'biological_process'
+        },
+        
+        # Synonym mapping
+        'complex': {
+            'synonym_for': 'macromolecular complex',
+            'represented_as': 'node',
+            'preferred_id': 'complex_portal',
+            'input_label': 'complex_id'
+        },
+        
+        # Relationship mapping
+        'protein_protein_interaction': {
+            'represented_as': 'edge',
+            'preferred_id': 'intact',
+            'input_label': 'interaction_id',
+            'is_a': 'pairwise_molecular_interaction',
+            'subject': 'protein',
+            'object': 'protein'
+        }
+    }
+    
+    return schema_config
 """
             },
             "outputs_expected": [
                 "Architecture choice (Simple/Series/Hierarchical/Custom)",
-                "Extraction strategy document"
+                "Extraction strategy document",
+                "Schema configuration file (config/schema_config.yaml)"
             ]
         },
         3: {
@@ -544,6 +633,214 @@ def get_decision_guidance(data_characteristics: Dict[str, Any]) -> Dict[str, Any
     }
 
 
+def get_schema_configuration_guidance() -> Dict[str, Any]:
+    """
+    Provides comprehensive guidance on BioCypher schema configuration.
+    
+    Returns:
+        Dict containing schema configuration guidance and best practices
+    """
+    return {
+        "schema_configuration_overview": {
+            "name": "BioCypher Schema Configuration",
+            "description": "Schema configuration defines how data sources map to BioCypher's ontological structure",
+            "file_location": "config/schema_config.yaml",
+            "documentation_reference": "https://biocypher.org/BioCypher/learn/tutorials/tutorial002_handling_ontologies/"
+        },
+        "schema_file_structure": {
+            "standard_location": "config/schema_config.yaml",
+            "alternative_locations": [
+                "schema_config.yaml",
+                "config/schema.yaml",
+                "biocypher_schema.yaml"
+            ],
+            "file_format": "YAML",
+            "naming_convention": "schema_config.yaml"
+        },
+        "core_concepts": {
+            "ontology_grounding": {
+                "description": "BioCypher uses ontologies to ground knowledge graph contents in biology",
+                "benefits": [
+                    "Machine readability and automation capabilities",
+                    "Accessibility for biologically oriented researchers",
+                    "Standardized terminology and relationships"
+                ],
+                "default_ontology": "Biolink model"
+            },
+            "schema_configuration": {
+                "description": "YAML file that maps data concepts to ontological classes",
+                "purpose": "Define how data sources map to BioCypher's ontological structure",
+                "key_components": [
+                    "Class definitions",
+                    "Property mappings", 
+                    "Relationship definitions",
+                    "Ontology inheritance"
+                ]
+            }
+        },
+        "schema_configuration_guidelines": {
+            "basic_structure": {
+                "description": "Each class in schema_config.yaml defines how data maps to ontological concepts",
+                "required_fields": [
+                    "represented_as: node or edge",
+                    "preferred_id: identifier source",
+                    "input_label: data source field name"
+                ],
+                "optional_fields": [
+                    "synonym_for: ontology class synonym",
+                    "is_a: parent ontology class",
+                    "properties: additional attributes"
+                ]
+            },
+            "inheritance_patterns": {
+                "explicit_inheritance": {
+                    "description": "Use 'is_a' field to specify parent ontology class",
+                    "example": "protein: { is_a: polypeptide, ... }",
+                    "use_case": "When extending ontology with specific subclasses"
+                },
+                "implicit_inheritance": {
+                    "description": "Use multiple preferred_id values to create subclasses automatically",
+                    "example": "pathway: { preferred_id: [reactome, wikipathways], ... }",
+                    "use_case": "When dealing with multiple data sources for same concept"
+                }
+            },
+            "synonym_usage": {
+                "description": "Use 'synonym_for' to map to existing ontology classes with different names",
+                "example": "complex: { synonym_for: macromolecular complex, ... }",
+                "use_case": "When data uses different terminology than ontology"
+            }
+        },
+        "implementation_workflow": {
+            "step_1": {
+                "action": "Analyze data source structure",
+                "description": "Identify entities, relationships, and properties in your data",
+                "output": "Data structure analysis"
+            },
+            "step_2": {
+                "action": "Map to ontology concepts", 
+                "description": "Identify corresponding concepts in Biolink or other ontologies",
+                "output": "Concept mapping document"
+            },
+            "step_3": {
+                "action": "Create schema configuration",
+                "description": "Write schema_config.yaml with proper mappings",
+                "output": "Initial schema_config.yaml"
+            },
+            "step_4": {
+                "action": "Validate and refine",
+                "description": "Test schema with sample data and refine mappings",
+                "output": "Validated schema configuration"
+            }
+        },
+        "best_practices": {
+            "naming_conventions": [
+                "Use lowercase with underscores for class names",
+                "Use PascalCase for Neo4j labels (handled automatically)",
+                "Be consistent with terminology across schema"
+            ],
+            "ontology_usage": [
+                "Start with Biolink model as base ontology",
+                "Extend with domain-specific ontologies when needed",
+                "Use hybrid ontologies for complex domains"
+            ],
+            "schema_organization": [
+                "Group related classes together",
+                "Use comments to document complex mappings",
+                "Keep schema file well-organized and readable"
+            ],
+            "validation": [
+                "Test schema with sample data",
+                "Verify ontology compliance",
+                "Check for missing or incorrect mappings"
+            ]
+        },
+        "common_patterns": {
+            "simple_entity": {
+                "description": "Basic entity mapping to ontology class",
+                "example": """
+protein:
+  represented_as: node
+  preferred_id: uniprot
+  input_label: protein_id
+  is_a: polypeptide
+""",
+                "use_case": "Simple protein data mapping"
+            },
+            "multi_source_entity": {
+                "description": "Entity with multiple data sources",
+                "example": """
+pathway:
+  represented_as: node
+  preferred_id: [reactome, wikipathways]
+  input_label: [react, wiki]
+  is_a: biological_process
+""",
+                "use_case": "Pathway data from multiple sources"
+            },
+            "synonym_mapping": {
+                "description": "Mapping to ontology class with different name",
+                "example": """
+complex:
+  synonym_for: macromolecular complex
+  represented_as: node
+  preferred_id: complex_portal
+  input_label: complex_id
+""",
+                "use_case": "Data uses different terminology than ontology"
+            },
+            "relationship_mapping": {
+                "description": "Mapping relationships between entities",
+                "example": """
+protein_protein_interaction:
+  represented_as: edge
+  preferred_id: intact
+  input_label: interaction_id
+  is_a: pairwise_molecular_interaction
+  subject: protein
+  object: protein
+""",
+                "use_case": "Protein-protein interaction data"
+            }
+        },
+        "troubleshooting": {
+            "common_issues": [
+                {
+                    "issue": "Schema validation errors",
+                    "solution": "Check ontology class names and inheritance structure",
+                    "reference": "Verify against Biolink model or target ontology"
+                },
+                {
+                    "issue": "Missing ontology classes",
+                    "solution": "Extend schema with custom classes or use synonym_for",
+                    "reference": "Consider hybrid ontology approach"
+                },
+                {
+                    "issue": "Incorrect property mappings",
+                    "solution": "Verify property names and data types",
+                    "reference": "Check BioCypher property documentation"
+                }
+            ]
+        },
+        "resources": {
+            "documentation": [
+                "https://biocypher.org/BioCypher/learn/tutorials/tutorial002_handling_ontologies/",
+                "https://biocypher.org/BioCypher/reference/schema_configuration/",
+                "https://biolink.github.io/biolink-model/"
+            ],
+            "ontologies": [
+                "Biolink Model: https://biolink.github.io/biolink-model/",
+                "OBO Foundry: https://obofoundry.org/",
+                "BioPortal: https://bioportal.bioontology.org/"
+            ],
+            "tools": [
+                "BioCypher Schema Validator",
+                "Ontology Visualization Tools",
+                "OWL/RDF Processing Libraries"
+            ]
+        }
+    }
+
+
 # Create the FastMCP instance
 mcp = FastMCP("biocypher_mcp")
 
@@ -553,6 +850,7 @@ mcp.tool(get_adapter_creation_workflow)
 mcp.tool(get_phase_guidance)
 mcp.tool(get_implementation_patterns)
 mcp.tool(get_decision_guidance)
+mcp.tool(get_schema_configuration_guidance)
 
 
 # --- Streamable HTTP transport (ASGI app) ---
