@@ -544,6 +544,172 @@ def get_decision_guidance(data_characteristics: Dict[str, Any]) -> Dict[str, Any
     }
 
 
+def get_schema_configuration_guidance() -> Dict[str, Any]:
+    """
+    Provides comprehensive guidance on BioCypher schema configuration.
+    
+    Returns:
+        Dict containing schema configuration guidance and best practices
+    """
+    return {
+        "schema_configuration_overview": {
+            "name": "BioCypher Schema Configuration",
+            "description": "Schema configuration defines how data sources map to BioCypher's ontological structure",
+            "file_location": "config/schema_config.yaml",
+            "documentation_reference": "https://biocypher.org/BioCypher/learn/tutorials/tutorial002_handling_ontologies/"
+        },
+        "schema_file_structure": {
+            "standard_location": "config/schema_config.yaml",
+            "alternative_locations": [
+                "schema_config.yaml",
+                "config/schema.yaml",
+                "biocypher_schema.yaml"
+            ],
+            "file_format": "YAML",
+            "naming_convention": "schema_config.yaml"
+        },
+        "core_concepts": {
+            "ontology_grounding": {
+                "description": "BioCypher uses ontologies to ground knowledge graph contents in biology",
+                "benefits": [
+                    "Machine readability and automation capabilities",
+                    "Accessibility for biologically oriented researchers",
+                    "Standardized terminology and relationships"
+                ],
+                "default_ontology": "Biolink model"
+            },
+            "schema_configuration": {
+                "description": "YAML file that maps data concepts to ontological classes",
+                "purpose": "Define how data sources map to BioCypher's ontological structure",
+                "key_components": [
+                    "Class definitions",
+                    "Property mappings", 
+                    "Relationship definitions",
+                    "Ontology inheritance"
+                ]
+            }
+        },
+        "schema_configuration_guidelines": {
+            "basic_structure": {
+                "description": "Each class in schema_config.yaml defines how data maps to ontological concepts",
+                "required_fields": [
+                    "represented_as: node or edge",
+                    "preferred_id: identifier source",
+                    "input_label: data source field name"
+                ],
+                "optional_fields": [
+                    "synonym_for: ontology class synonym",
+                    "is_a: parent ontology class",
+                    "properties: additional attributes"
+                ]
+            }
+        }
+    }
+
+
+def get_resource_management_guidance() -> Dict[str, Any]:
+    """
+    Provides comprehensive guidance on BioCypher resource management and download/cache functionality.
+    
+    Returns:
+        Dict containing resource management guidance and best practices
+    """
+    return {
+        "resource_management_overview": {
+            "name": "BioCypher Resource Management",
+            "description": "Resource management handles downloading, caching, and managing data sources for BioCypher pipelines",
+            "documentation_reference": "https://biocypher.org/BioCypher/reference/source/download-cache/",
+            "pipeline_position": "Beginning of pipeline - data source acquisition"
+        },
+        "core_components": {
+            "resource_base_class": {
+                "name": "Resource Base Class",
+                "description": "Abstract base class for managing downloadable resources",
+                "location": "biocypher/biocypher/_get.py",
+                "key_features": [
+                    "File downloads",
+                    "API requests", 
+                    "Local caching",
+                    "Lifetime management"
+                ]
+            },
+            "downloader": {
+                "name": "Downloader",
+                "description": "Manages resource downloads and caching",
+                "key_features": [
+                    "Automatic caching",
+                    "Lifetime management",
+                    "Cache validation",
+                    "Multiple resource handling"
+                ]
+            },
+            "resource_types": {
+                "file_download": {
+                    "name": "FileDownload",
+                    "description": "Downloads files from URLs",
+                    "use_case": "Static data files, databases, ontologies"
+                },
+                "api_request": {
+                    "name": "APIRequest", 
+                    "description": "Makes API requests and caches responses",
+                    "use_case": "REST APIs, web services, dynamic data"
+                }
+            }
+        },
+        "resource_initialization": {
+            "basic_structure": {
+                "description": "Initialize a Resource with name, URL(s), and lifetime",
+                "required_parameters": [
+                    "name: Resource identifier",
+                    "url_s: URL or list of URLs",
+                    "lifetime: Cache lifetime in days (0 = permanent)"
+                ],
+                "example": """
+from biocypher import FileDownload
+
+# Single file resource
+protein_data = FileDownload(
+    name="uniprot_proteins",
+    url_s="https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.dat.gz",
+    lifetime=7  # Refresh weekly
+)
+
+# Multiple file resource
+pathway_data = FileDownload(
+    name="reactome_pathways", 
+    url_s=[
+        "https://reactome.org/download/current/ReactomePathways.txt",
+        "https://reactome.org/download/current/ReactomePathwaysRelation.txt"
+    ],
+    lifetime=30  # Refresh monthly
+)
+"""
+            }
+        },
+        "downloader_usage": {
+            "initialization": {
+                "description": "Initialize Downloader with optional cache directory",
+                "example": """
+from biocypher import Downloader
+
+# Use default temporary directory
+downloader = Downloader()
+
+# Use custom cache directory
+downloader = Downloader(cache_dir="/path/to/cache")
+"""
+            },
+            "downloading_resources": {
+                "description": "Download resources with automatic caching",
+                "example": """
+# Download single resource
+paths = downloader.download(protein_data)
+"""
+            }
+        }
+    }
+
+
 # Create the FastMCP instance
 mcp = FastMCP("biocypher_mcp")
 
@@ -553,6 +719,8 @@ mcp.tool(get_adapter_creation_workflow)
 mcp.tool(get_phase_guidance)
 mcp.tool(get_implementation_patterns)
 mcp.tool(get_decision_guidance)
+mcp.tool(get_schema_configuration_guidance)
+mcp.tool(get_resource_management_guidance)
 
 
 # --- Streamable HTTP transport (ASGI app) ---
