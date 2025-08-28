@@ -43,9 +43,9 @@ app = FastAPI(
     title="BioCypher MCP Server",
     description="A web server exposing BioCypher MCP tools for adapter creation workflows",
     version="0.1.0",
-    docs_url="/mcp/docs",
-    redoc_url="/mcp/redoc",
-    openapi_url="/mcp/openapi.json"
+    docs_url="/docs",
+    redoc_url="/redoc",
+    openapi_url="/openapi.json"
 )
 
 # Add CORS middleware
@@ -58,7 +58,7 @@ app.add_middleware(
 )
 
 
-@app.get("/mcp/", response_model=Dict[str, Any])
+@app.get("/", response_model=Dict[str, Any])
 async def root():
     """Root endpoint providing an overview of the MCP server."""
     return {
@@ -66,18 +66,18 @@ async def root():
         "description": "Web server exposing BioCypher MCP tools for adapter creation workflows",
         "version": "0.1.0",
         "endpoints": {
-            "workflows": "/mcp/workflows",
-            "workflow_details": "/mcp/workflows/adapter-creation",
-            "phase_guidance": "/mcp/phases/{phase_number}",
-            "patterns": "/mcp/patterns",
-            "patterns_specific": "/mcp/patterns/{pattern_type}",
-            "decision_guidance": "/mcp/decision-guidance",
-            "docs": "/mcp/docs"
+            "workflows": "/workflows",
+            "workflow_details": "/workflows/adapter-creation",
+            "phase_guidance": "/phases/{phase_number}",
+            "patterns": "/patterns",
+            "patterns_specific": "/patterns/{pattern_type}",
+            "decision_guidance": "/decision-guidance",
+            "docs": "/docs"
         }
     }
 
 
-@app.get("/mcp/workflows", response_model=Dict[str, Any])
+@app.get("/workflows", response_model=Dict[str, Any])
 async def get_workflows():
     """Get available BioCypher workflows."""
     try:
@@ -86,7 +86,7 @@ async def get_workflows():
         raise HTTPException(status_code=500, detail=f"Error retrieving workflows: {str(e)}")
 
 
-@app.get("/mcp/workflows/adapter-creation", response_model=Dict[str, Any])
+@app.get("/workflows/adapter-creation", response_model=Dict[str, Any])
 async def get_adapter_workflow():
     """Get detailed information about the adapter creation workflow."""
     try:
@@ -95,7 +95,7 @@ async def get_adapter_workflow():
         raise HTTPException(status_code=500, detail=f"Error retrieving workflow: {str(e)}")
 
 
-@app.get("/mcp/phases/{phase_number}", response_model=Dict[str, Any])
+@app.get("/phases/{phase_number}", response_model=Dict[str, Any])
 async def get_phase(phase_number: int):
     """Get detailed guidance for a specific phase."""
     try:
@@ -109,7 +109,7 @@ async def get_phase(phase_number: int):
         raise HTTPException(status_code=500, detail=f"Error retrieving phase guidance: {str(e)}")
 
 
-@app.get("/mcp/patterns", response_model=Dict[str, Any])
+@app.get("/patterns", response_model=Dict[str, Any])
 async def get_patterns():
     """Get all implementation patterns."""
     try:
@@ -118,7 +118,7 @@ async def get_patterns():
         raise HTTPException(status_code=500, detail=f"Error retrieving patterns: {str(e)}")
 
 
-@app.get("/mcp/patterns/{pattern_type}", response_model=Dict[str, Any])
+@app.get("/patterns/{pattern_type}", response_model=Dict[str, Any])
 async def get_specific_pattern(pattern_type: str):
     """Get a specific implementation pattern."""
     try:
@@ -132,7 +132,7 @@ async def get_specific_pattern(pattern_type: str):
         raise HTTPException(status_code=500, detail=f"Error retrieving pattern: {str(e)}")
 
 
-@app.post("/mcp/decision-guidance", response_model=Dict[str, Any])
+@app.post("/decision-guidance", response_model=Dict[str, Any])
 async def get_decision(data_characteristics: DataCharacteristics):
     """Get decision guidance based on data characteristics."""
     try:
@@ -143,7 +143,7 @@ async def get_decision(data_characteristics: DataCharacteristics):
         raise HTTPException(status_code=500, detail=f"Error generating decision guidance: {str(e)}")
 
 
-@app.get("/mcp/health", response_model=Dict[str, str])
+@app.get("/health", response_model=Dict[str, str])
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy", "service": "biocypher-mcp"}

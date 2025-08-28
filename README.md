@@ -40,15 +40,15 @@ docker-compose logs biocypher-mcp
 
 The web server provides the following endpoints:
 
-- `GET /mcp/` - Root endpoint with API overview
-- `GET /mcp/workflows` - Available workflows
-- `GET /mcp/workflows/adapter-creation` - Adapter creation workflow details
-- `GET /mcp/phases/{phase_number}` - Phase-specific guidance
-- `GET /mcp/patterns` - Implementation patterns
-- `GET /mcp/patterns/{pattern_type}` - Specific patterns
-- `POST /mcp/decision-guidance` - Decision guidance
-- `GET /mcp/health` - Health check
-- `GET /mcp/docs` - Interactive API documentation
+- `GET /` - Root endpoint with API overview
+- `GET /workflows` - Available workflows
+- `GET /workflows/adapter-creation` - Adapter creation workflow details
+- `GET /phases/{phase_number}` - Phase-specific guidance
+- `GET /patterns` - Implementation patterns
+- `GET /patterns/{pattern_type}` - Specific patterns
+- `POST /decision-guidance` - Decision guidance
+- `GET /health` - Health check
+- `GET /docs` - Interactive API documentation
 
 ## Development
 
