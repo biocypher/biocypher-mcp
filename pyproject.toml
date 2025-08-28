@@ -1,0 +1,36 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "biocypher-mcp"
+version = "0.1.0"
+description = "An MCP for assisting with BioCypher workflows."
+readme = "README.md"
+authors = [
+    {name = "Sebastian Lobentanzer", email = "sebastian.lobentanzer@gmail.com"},
+]
+requires-python = ">=3.11"
+dependencies = [
+    "fastmcp>=2.7.1",
+    "requests>=2.32.4",
+]
+
+[dependency-groups]
+dev = [
+  "pytest",
+  "black",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/slobentanzer/biocypher-mcp"
+"Bug Tracker" = "https://github.com/slobentanzer/biocypher-mcp/issues"
+
+[project.scripts]
+biocypher-mcp = "biocypher_mcp.main:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/biocypher_mcp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
