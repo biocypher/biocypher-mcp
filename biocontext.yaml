@@ -7,7 +7,7 @@ identifier: biocypher/biocypher-mcp
 name: BioCypher Knowledge Graph MCP
 
 description: >
-  Knowledge curation, grounding, and harmonisation are complex processes. The BioCypher ecosystem (https://biocypher.org) supports the deterministic mapping of diverse inputs to harmonised graphs. To further simplify the creation and maintenance of BioCypher pipelines, we provide an MCP server with implementation guidelines and structured documentation for LLM co-programmers. The remote Streamable HTTP endpoint can be connected to your favourite copilot software, helping with pipeline creation, schema configuration, adapter design and automation.
+  Knowledge curation, grounding, and harmonisation are complex processes. The BioCypher ecosystem (https://biocypher.org) supports the deterministic mapping of diverse inputs to harmonised graphs. To further simplify the creation and maintenance of BioCypher pipelines, we provide an MCP server with implementation guidelines and structured documentation for LLM co-programmers. The remote Streamable HTTP endpoint can be connected to your favourite copilot software, helping with pipeline creation, resource management, schema configuration, adapter design and automation.
 
 codeRepository: https://github.com/biocypher/biocypher-mcp
 
@@ -47,6 +47,8 @@ programmingLanguage:
 featureList:
   - Pipeline Setup
   - Pipeline Planning
+  - Resource Management
+  - Data Acquisition
   - Semantic Definition
   - Schema Configuration
   - Adapter Design

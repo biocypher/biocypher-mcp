@@ -55,6 +55,21 @@ def get_adapter_creation_workflow() -> Dict[str, Any]:
         "phases": [
             {
                 "phase": 1,
+                "name": "Resource Management and Data Acquisition",
+                "description": "Set up resource management and acquire data sources for the pipeline",
+                "key_activities": [
+                    "Resource Identification",
+                    "Download Strategy Design",
+                    "Cache Configuration"
+                ],
+                "outputs": [
+                    "Resource definitions",
+                    "Download strategy",
+                    "Cache configuration"
+                ]
+            },
+            {
+                "phase": 2,
                 "name": "Data Analysis and Understanding",
                 "description": "Analyze the input data structure before making implementation decisions",
                 "key_activities": [
@@ -69,7 +84,7 @@ def get_adapter_creation_workflow() -> Dict[str, Any]:
                 ]
             },
             {
-                "phase": 2,
+                "phase": 3,
                 "name": "Implementation Strategy Design",
                 "description": "Design the adapter architecture and extraction strategy based on data analysis",
                 "key_activities": [
@@ -82,7 +97,7 @@ def get_adapter_creation_workflow() -> Dict[str, Any]:
                 ]
             },
             {
-                "phase": 3,
+                "phase": 4,
                 "name": "Implementation",
                 "description": "Implement the adapter using the designed strategy",
                 "key_activities": [
@@ -95,7 +110,7 @@ def get_adapter_creation_workflow() -> Dict[str, Any]:
                 ]
             },
             {
-                "phase": 4,
+                "phase": 5,
                 "name": "Quality Assurance",
                 "description": "Test and validate the adapter implementation",
                 "key_activities": [
@@ -108,7 +123,7 @@ def get_adapter_creation_workflow() -> Dict[str, Any]:
                 ]
             },
             {
-                "phase": 5,
+                "phase": 6,
                 "name": "Documentation and Maintenance",
                 "description": "Document the implementation and prepare for maintenance",
                 "key_activities": [
@@ -143,26 +158,104 @@ def get_phase_guidance(phase_number: int) -> Dict[str, Any]:
     """
     phase_guidance = {
         1: {
+            "phase_name": "Resource Management and Data Acquisition",
+            "detailed_instructions": [
+                "1.1 Resource Identification:",
+                "   - Identify all data sources required for the pipeline",
+                "   - Determine resource types (files, APIs, databases)",
+                "   - Map resource URLs and access methods",
+                "   - Assess resource update frequency and reliability",
+                "",
+                "1.2 Download Strategy Design:",
+                "   - Choose appropriate resource types (FileDownload, APIRequest)",
+                "   - Design resource naming conventions",
+                "   - Plan for single vs multiple file resources",
+                "   - Consider resource dependencies and ordering",
+                "",
+                "1.3 Cache Configuration:",
+                "   - Set appropriate lifetime values for each resource",
+                "   - Configure cache directory structure",
+                "   - Plan cache management strategy",
+                "   - Design error handling for download failures"
+            ],
+            "code_examples": {
+                "resource_identification": """
+def identify_resources(data_requirements):
+    resources = []
+    
+    # Identify file-based resources
+    for file_source in data_requirements['files']:
+        resources.append({
+            'name': file_source['name'],
+            'type': 'FileDownload',
+            'urls': file_source['urls'],
+            'lifetime': file_source['update_frequency']
+        })
+    
+    # Identify API-based resources
+    for api_source in data_requirements['apis']:
+        resources.append({
+            'name': api_source['name'],
+            'type': 'APIRequest',
+            'urls': api_source['endpoints'],
+            'lifetime': api_source['cache_duration']
+        })
+    
+    return resources
+""",
+                "download_strategy": """
+def design_download_strategy(resources):
+    strategy = {
+        'downloader_config': {
+            'cache_dir': '/path/to/cache',
+            'error_handling': 'retry_with_backoff'
+        },
+        'resource_definitions': [],
+        'download_order': []
+    }
+    
+    for resource in resources:
+        if resource['type'] == 'FileDownload':
+            strategy['resource_definitions'].append(
+                f"FileDownload(name='{resource['name']}', "
+                f"url_s={resource['urls']}, lifetime={resource['lifetime']})"
+            )
+        elif resource['type'] == 'APIRequest':
+            strategy['resource_definitions'].append(
+                f"APIRequest(name='{resource['name']}', "
+                f"url_s={resource['urls']}, lifetime={resource['lifetime']})"
+            )
+    
+    return strategy
+"""
+            },
+            "outputs_expected": [
+                "Resource definitions",
+                "Download strategy",
+                "Cache configuration"
+            ]
+        },
+        2: {
             "phase_name": "Data Analysis and Understanding",
             "detailed_instructions": [
-                "1.1 Resource Structure Analysis:",
+                "2.1 Resource Structure Analysis:",
                 "   - Determine data source type (file-based, API-based, database-based, custom)",
                 "   - Analyze the structure of the input data source",
                 "   - Adapt analysis based on data type and format",
                 "",
-                "1.2 Metadata Pattern Recognition:",
+                "2.2 Metadata Pattern Recognition:",
                 "   - For Single Resource: Extract all available metadata fields",
                 "   - For Series/Collection: Identify shared vs. unique metadata patterns", 
                 "   - For Hierarchical Data: Map parent-child relationships",
                 "   - For Time Series: Identify temporal patterns and sequences",
                 "",
-                "1.3 Schema Assessment:",
+                "2.3 Schema Assessment:",
                 "   - Determine if existing schema is sufficient or needs creation/modification",
                 "   - If no schema exists, create one based on data analysis",
                 "   - Check if existing schema covers all data concepts",
                 "   - Extend schema if missing concepts are identified",
                 "",
-                "1.4 Schema Configuration Planning:",
+                "2.4 Schema Configuration Planning:",
                 "   - Identify entities and relationships in your data",
                 "   - Map data concepts to Biolink model or other ontologies",
                 "   - Plan schema_config.yaml structure in config/ directory",
@@ -233,7 +326,7 @@ def plan_schema_configuration(data_analysis):
                 "Schema configuration plan"
             ]
         },
-        2: {
+        3: {
             "phase_name": "Implementation Strategy Design",
             "detailed_instructions": [
                 "2.1 Adapter Architecture Decision:",
@@ -335,24 +428,35 @@ def create_schema_configuration(data_analysis):
 """
             },
             "outputs_expected": [
-                "Architecture choice (Simple/Series/Hierarchical/Custom)",
-                "Extraction strategy document",
-                "Schema configuration file (config/schema_config.yaml)"
+                "Data source type identification",
+                "Structure analysis report",
+                "Schema requirements assessment"
             ]
         },
         3: {
-            "phase_name": "Implementation",
+            "phase_name": "Implementation Strategy Design",
             "detailed_instructions": [
-                "3.1 Base Adapter Template:",
-                "   - Create adaptive adapter implementation template",
-                "   - Implement data source analysis method",
-                "   - Implement strategy design method",
-                "   - Implement node and edge generation methods",
+                "3.1 Adapter Architecture Decision:",
+                "   - Choose appropriate architecture based on data analysis:",
+                "     * Simple Adapter: Single resource, flat structure",
+                "     * Series Adapter: Multiple resources, shared structure",
+                "     * Hierarchical Adapter: Nested structure",
+                "     * Custom Adapter: Complex, irregular structure",
                 "",
-                "3.2 Implementation Patterns:",
-                "   - Pattern 1: Field Mapping - Map data fields to schema properties",
-                "   - Pattern 2: Conditional Extraction - Extract data using conditional rules",
-                "   - Pattern 3: Progressive Fallback - Try multiple extraction methods"
+                "3.2 Data Extraction Strategy:",
+                "   - Design extraction strategy based on data characteristics",
+                "   - Determine primary extraction method",
+                "   - Identify fallback methods",
+                "   - Design error handling approach",
+                "   - Create validation rules",
+                "",
+                "3.3 Schema Configuration Implementation:",
+                "   - Create config/schema_config.yaml file",
+                "   - Implement entity mappings with proper ontology grounding",
+                "   - Define relationship mappings with subject/object specifications",
+                "   - Configure inheritance patterns (explicit vs implicit)",
+                "   - Set up synonym mappings if needed",
+                "   - Validate schema configuration against BioCypher standards"
             ],
             "code_examples": {
                 "base_template": """
@@ -392,22 +496,24 @@ def map_fields_to_schema(self, data_item, field_mapping):
 """
             },
             "outputs_expected": [
-                "Working adapter code",
-                "Field mapping configuration"
+                "Architecture choice (Simple/Series/Hierarchical/Custom)",
+                "Extraction strategy document",
+                "Schema configuration file (config/schema_config.yaml)"
             ]
         },
         4: {
-            "phase_name": "Quality Assurance",
+            "phase_name": "Implementation",
             "detailed_instructions": [
-                "4.1 Adaptive Testing Strategy:",
-                "   - Create test suite based on data characteristics",
-                "   - Implement schema compliance tests",
-                "   - Add data-specific tests (relationships, temporal, hierarchical)",
+                "4.1 Base Adapter Template:",
+                "   - Create adaptive adapter implementation template",
+                "   - Implement data source analysis method",
+                "   - Implement strategy design method",
+                "   - Implement node and edge generation methods",
                 "",
-                "4.2 Validation Framework:",
-                "   - Create adaptive validation framework",
-                "   - Implement validation rules based on data characteristics",
-                "   - Apply validation to adapter output"
+                "4.2 Implementation Patterns:",
+                "   - Pattern 1: Field Mapping - Map data fields to schema properties",
+                "   - Pattern 2: Conditional Extraction - Extract data using conditional rules",
+                "   - Pattern 3: Progressive Fallback - Try multiple extraction methods"
             ],
             "code_examples": {
                 "testing_strategy": """
@@ -443,20 +549,51 @@ class AdaptiveValidator:
 """
             },
             "outputs_expected": [
+                "Working adapter code",
+                "Field mapping configuration"
+            ]
+        },
+        5: {
+            "phase_name": "Quality Assurance",
+            "detailed_instructions": [
+                "5.1 Adaptive Testing Strategy:",
+                "   - Create test suite based on data characteristics",
+                "   - Implement schema compliance tests",
+                "   - Add data-specific tests (relationships, temporal, hierarchical)",
+                "",
+                "5.2 Validation Framework:",
+                "   - Create adaptive validation framework",
+                "   - Implement validation rules based on data characteristics",
+                "   - Apply validation to adapter output"
+            ],
+            "code_examples": {
+                "documentation_generation": """
+def generate_adaptive_documentation(adapter, data_analysis):
+    doc = {
+        'overview': create_overview(adapter, data_analysis),
+        'data_structure': document_data_structure(data_analysis),
+        'extraction_strategy': document_strategy(adapter),
+        'usage_examples': create_examples(adapter),
+        'troubleshooting': create_troubleshooting_guide(adapter)
+    }
+    return doc
+"""
+            },
+            "outputs_expected": [
                 "Test suite",
                 "Validation results"
             ]
         },
-        5: {
+        6: {
             "phase_name": "Documentation and Maintenance",
             "detailed_instructions": [
-                "5.1 Adaptive Documentation:",
+                "6.1 Adaptive Documentation:",
                 "   - Generate documentation based on adapter characteristics",
                 "   - Create overview and data structure documentation",
                 "   - Document extraction strategy and usage examples",
                 "   - Create troubleshooting guide",
                 "",
-                "5.2 Maintenance Planning:",
+                "6.2 Maintenance Planning:",
                 "   - Plan for future updates and modifications",
                 "   - Document decision rationale for future reference"
             ],
@@ -483,7 +620,7 @@ def generate_adaptive_documentation(adapter, data_analysis):
     
     if phase_number not in phase_guidance:
         return {
-            "error": f"Phase {phase_number} not found. Available phases: 1-5",
+            "error": f"Phase {phase_number} not found. Available phases: 1-6",
             "available_phases": list(phase_guidance.keys())
         }
     
@@ -629,6 +766,260 @@ def get_decision_guidance(data_characteristics: Dict[str, Any]) -> Dict[str, Any
             "series_extraction": "Multiple resources with shared structure, consistent metadata patterns, batch processing requirements", 
             "hierarchical_extraction": "Nested data structures, parent-child relationships, complex metadata hierarchies",
             "custom_extraction": "Irregular data structures, complex transformation requirements, multiple data source integration"
+        }
+    }
+
+
+def get_resource_management_guidance() -> Dict[str, Any]:
+    """
+    Provides comprehensive guidance on BioCypher resource management and download/cache functionality.
+    
+    Returns:
+        Dict containing resource management guidance and best practices
+    """
+    return {
+        "resource_management_overview": {
+            "name": "BioCypher Resource Management",
+            "description": "Resource management handles downloading, caching, and managing data sources for BioCypher pipelines",
+            "documentation_reference": "https://biocypher.org/BioCypher/reference/source/download-cache/",
+            "pipeline_position": "Beginning of pipeline - data source acquisition"
+        },
+        "core_components": {
+            "resource_base_class": {
+                "name": "Resource Base Class",
+                "description": "Abstract base class for managing downloadable resources",
+                "location": "biocypher/biocypher/_get.py",
+                "key_features": [
+                    "File downloads",
+                    "API requests", 
+                    "Local caching",
+                    "Lifetime management"
+                ]
+            },
+            "downloader": {
+                "name": "Downloader",
+                "description": "Manages resource downloads and caching",
+                "key_features": [
+                    "Automatic caching",
+                    "Lifetime management",
+                    "Cache validation",
+                    "Multiple resource handling"
+                ]
+            },
+            "resource_types": {
+                "file_download": {
+                    "name": "FileDownload",
+                    "description": "Downloads files from URLs",
+                    "use_case": "Static data files, databases, ontologies"
+                },
+                "api_request": {
+                    "name": "APIRequest", 
+                    "description": "Makes API requests and caches responses",
+                    "use_case": "REST APIs, web services, dynamic data"
+                }
+            }
+        },
+        "resource_initialization": {
+            "basic_structure": {
+                "description": "Initialize a Resource with name, URL(s), and lifetime",
+                "required_parameters": [
+                    "name: Resource identifier",
+                    "url_s: URL or list of URLs",
+                    "lifetime: Cache lifetime in days (0 = permanent)"
+                ],
+                "example": """
+from biocypher import FileDownload
+
+# Single file resource
+protein_data = FileDownload(
+    name="uniprot_proteins",
+    url_s="https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.dat.gz",
+    lifetime=7  # Refresh weekly
+)
+
+# Multiple file resource
+pathway_data = FileDownload(
+    name="reactome_pathways", 
+    url_s=[
+        "https://reactome.org/download/current/ReactomePathways.txt",
+        "https://reactome.org/download/current/ReactomePathwaysRelation.txt"
+    ],
+    lifetime=30  # Refresh monthly
+)
+"""
+            }
+        },
+        "downloader_usage": {
+            "initialization": {
+                "description": "Initialize Downloader with optional cache directory",
+                "example": """
+from biocypher import Downloader
+
+# Use default temporary directory
+downloader = Downloader()
+
+# Use custom cache directory
+downloader = Downloader(cache_dir="/path/to/cache")
+"""
+            },
+            "downloading_resources": {
+                "description": "Download resources with automatic caching",
+                "example": """
+# Download single resource
+paths = downloader.download(protein_data)
+
+# Download multiple resources
+paths = downloader.download(protein_data, pathway_data, ontology_data)
+
+# Get cached version without downloading
+cached_paths = downloader.get_cached_version(protein_data)
+"""
+            }
+        },
+        "caching_behavior": {
+            "cache_management": {
+                "description": "Automatic cache management based on resource lifetime",
+                "features": [
+                    "JSON record of download dates",
+                    "Automatic cache expiration",
+                    "Cache validation before reuse",
+                    "Transparent cache access"
+                ]
+            },
+            "lifetime_settings": {
+                "permanent": {
+                    "value": 0,
+                    "description": "Resource never expires, only download once",
+                    "use_case": "Reference data, ontologies"
+                },
+                "temporary": {
+                    "value": "1-30 days",
+                    "description": "Resource expires after specified days",
+                    "use_case": "Regularly updated data, API responses"
+                }
+            }
+        },
+        "implementation_patterns": {
+            "single_file_resource": {
+                "description": "Download and cache a single file",
+                "example": """
+# Define resource
+ontology = FileDownload(
+    name="biolink_ontology",
+    url_s="https://raw.githubusercontent.com/biolink/biolink-model/v3.2.1/biolink-model.owl.ttl",
+    lifetime=0  # Permanent
+)
+
+# Download and get path
+ontology_path = downloader.download(ontology)[0]
+"""
+            },
+            "multiple_file_resource": {
+                "description": "Download and cache multiple related files",
+                "example": """
+# Define multi-file resource
+protein_interactions = FileDownload(
+    name="intact_interactions",
+    url_s=[
+        "https://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact.txt",
+        "https://ftp.ebi.ac.uk/pub/databases/intact/current/psimitab/intact_complex.txt"
+    ],
+    lifetime=7
+)
+
+# Download all files
+interaction_paths = downloader.download(protein_interactions)
+"""
+            },
+            "api_resource": {
+                "description": "Cache API responses",
+                "example": """
+# Define API resource
+gene_info = APIRequest(
+    name="ensembl_genes",
+    url_s="https://rest.ensembl.org/lookup/symbol/homo_sapiens/BRCA1",
+    lifetime=1  # Daily refresh
+)
+
+# Get cached response
+gene_data = downloader.download(gene_info)[0]
+"""
+            }
+        },
+        "best_practices": {
+            "resource_naming": [
+                "Use descriptive, unique names for resources",
+                "Include data source and version in name",
+                "Use consistent naming conventions across project"
+            ],
+            "lifetime_management": [
+                "Set lifetime=0 for reference data that rarely changes",
+                "Use appropriate lifetimes for regularly updated data",
+                "Consider data update frequency when setting lifetime"
+            ],
+            "cache_organization": [
+                "Use custom cache directory for production environments",
+                "Monitor cache size and clean up old resources",
+                "Backup important cached resources"
+            ],
+            "error_handling": [
+                "Handle download failures gracefully",
+                "Implement retry logic for network issues",
+                "Validate downloaded resources before use"
+            ]
+        },
+        "integration_with_adapters": {
+            "adapter_usage": {
+                "description": "Use downloaded resources in BioCypher adapters",
+                "example": """
+class ProteinAdapter(BaseAdapter):
+    def __init__(self):
+        # Download required resources
+        self.downloader = Downloader()
+        self.protein_data = FileDownload(
+            name="uniprot_proteins",
+            url_s="https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.dat.gz",
+            lifetime=7
+        )
+        self.protein_paths = self.downloader.download(self.protein_data)
+    
+    def get_nodes(self):
+        # Use downloaded data
+        for path in self.protein_paths:
+            # Process downloaded file
+            pass
+"""
+            }
+        },
+        "troubleshooting": {
+            "common_issues": [
+                {
+                    "issue": "Cache not found",
+                    "solution": "Check cache directory permissions and disk space",
+                    "reference": "Verify cache_dir parameter and file system access"
+                },
+                {
+                    "issue": "Download failures",
+                    "solution": "Check network connectivity and URL validity",
+                    "reference": "Verify URLs and implement retry logic"
+                },
+                {
+                    "issue": "Cache expiration issues",
+                    "solution": "Check lifetime settings and cache file integrity",
+                    "reference": "Verify cache.json file and lifetime parameters"
+                }
+            ]
+        },
+        "resources": {
+            "documentation": [
+                "https://biocypher.org/BioCypher/reference/source/download-cache/",
+                "https://biocypher.org/BioCypher/learn/tutorials/tutorial001_basics/"
+            ],
+            "examples": [
+                "BioCypher tutorial examples",
+                "Adapter implementation patterns",
+                "Resource management best practices"
+            ]
         }
     }
 
@@ -851,6 +1242,7 @@ mcp.tool(get_phase_guidance)
 mcp.tool(get_implementation_patterns)
 mcp.tool(get_decision_guidance)
 mcp.tool(get_schema_configuration_guidance)
+mcp.tool(get_resource_management_guidance)
 
 
 # --- Streamable HTTP transport (ASGI app) ---
