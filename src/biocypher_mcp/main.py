@@ -124,12 +124,67 @@ def sample_tool_function(
     return processed_records
 
 
+# MCP RESOURCES SECTION
+from pathlib import Path
+
+
+def get_biocypher_adapter_framework_resource() -> Dict[str, Any]:
+    """
+    Returns the BioCypher Adapter Creation Framework resource.
+    
+    Returns:
+        Dict containing the resource definition and content
+    """
+    return {
+        "uri": "https://biocypher.org/resources/adapter-creation-framework",
+        "name": "adapter-creation-framework",
+        "title": "BioCypher Adapter Creation Framework",
+        "mimeType": "text/markdown",
+        "description": "Generalized framework for creating BioCypher adapters from any data source, with adaptive analysis and implementation strategies",
+        "annotations": {
+            "audience": ["user", "assistant"],
+            "priority": 0.9,
+            "lastModified": "2025-01-12T15:00:58Z"
+        }
+    }
+
+
+def get_biocypher_adapter_framework_content() -> str:
+    """
+    Returns the content of the BioCypher Adapter Creation Framework.
+    
+    Returns:
+        String containing the markdown content
+    """
+    # Get the path to the resources directory
+    current_dir = Path(__file__).parent
+    resource_file = current_dir / "resources" / "adapter_framework.md"
+    
+    try:
+        with open(resource_file, 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        return "# BioCypher Adapter Creation Framework\n\nResource file not found. Please check the installation."
+
+
 # MAIN SECTION
 # Create the FastMCP instance
 mcp = FastMCP("biocypher_mcp")
 
 # Register all tools
 mcp.tool(sample_tool_function)
+
+# Register resources
+@mcp.resource("https://biocypher.org/resources/adapter-creation-framework")
+def get_adapter_framework_resource():
+    """Get the BioCypher Adapter Creation Framework resource."""
+    return get_biocypher_adapter_framework_resource()
+
+
+@mcp.resource("https://biocypher.org/resources/adapter-creation-framework/content")
+def get_adapter_framework_content():
+    """Get the content of the BioCypher Adapter Creation Framework."""
+    return get_biocypher_adapter_framework_content()
 
 
 def main():
