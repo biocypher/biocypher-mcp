@@ -555,9 +555,22 @@ mcp.tool(get_implementation_patterns)
 mcp.tool(get_decision_guidance)
 
 
+# --- Streamable HTTP transport (ASGI app) ---
+# Expose this as the root app; serve it with uvicorn/gunicorn.
+app = mcp.http_app()
+
+# Add health check endpoint using Starlette
+from starlette.responses import JSONResponse
+
+@app.route("/health", methods=["GET"])
+async def health_check(request):
+    """Health check endpoint for Docker and load balancers."""
+    return JSONResponse({"status": "healthy", "service": "biocypher-mcp"})
+
 def main():
-    """Main entry point for the application."""
-    mcp.run()
+    """Run the MCP server over Streamable HTTP using uvicorn."""
+    import uvicorn
+    uvicorn.run("biocypher_mcp.main:app", host="0.0.0.0", port=8000)
 
 
 if __name__ == "__main__":
