@@ -84,7 +84,7 @@ The web server provides REST API endpoints for traditional HTTP clients:
 
 ```bash
 # Clone the repository
-git clone https://github.com/slobentanzer/biocypher-mcp.git
+git clone https://github.com/biocypher/biocypher-mcp.git
 cd biocypher-mcp
 
 # Install development dependencies
