@@ -728,9 +728,41 @@ mcp.tool(get_resource_management_guidance)
 app = mcp.http_app(path="/")
 
 def main():
-    """Run the MCP server over Streamable HTTP using uvicorn."""
-    import uvicorn
-    uvicorn.run("biocypher_mcp.main:app", host="0.0.0.0", port=8000)
+    """Run the MCP server.
+    
+    By default, runs in stdio mode for development.
+    For production HTTP mode, use: python -m biocypher_mcp.main --transport http
+    """
+    import sys
+    import argparse
+    
+    parser = argparse.ArgumentParser(description="Run the BioCypher MCP server")
+    parser.add_argument(
+        "--transport", 
+        choices=["stdio", "http"], 
+        default="stdio",
+        help="Transport method (default: stdio)"
+    )
+    parser.add_argument(
+        "--port", 
+        type=int, 
+        default=8000,
+        help="Port for HTTP transport (default: 8000)"
+    )
+    parser.add_argument(
+        "--host", 
+        default="0.0.0.0",
+        help="Host for HTTP transport (default: 0.0.0.0)"
+    )
+    
+    args = parser.parse_args()
+    
+    if args.transport == "http":
+        print(f"Starting BioCypher MCP server in HTTP mode on {args.host}:{args.port}")
+        mcp.run(transport="http", port=args.port, host=args.host)
+    else:
+        print("Starting BioCypher MCP server in stdio mode")
+        mcp.run(transport="stdio")
 
 
 if __name__ == "__main__":
