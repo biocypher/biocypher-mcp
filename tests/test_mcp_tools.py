@@ -15,6 +15,8 @@ from biocypher_mcp.main import (
     get_phase_guidance,
     get_implementation_patterns,
     get_decision_guidance,
+    check_project_exists,
+    get_cookiecutter_instructions,
     mcp
 )
 
@@ -28,7 +30,7 @@ class TestAvailableWorkflows:
         
         # Check required fields
         assert "workflows" in result
-        assert "framework_overview" in result
+        assert "supporting_tools" in result
         
         # Check workflows is a list
         assert isinstance(result["workflows"], list)
@@ -39,9 +41,13 @@ class TestAvailableWorkflows:
         result = get_available_workflows()
         workflow = result["workflows"][0]
         
-        expected_fields = ["id", "name", "description", "status", "complexity", "estimated_time", "prerequisites"]
+        # All workflows should have these fields
+        expected_fields = ["id", "name", "description"]
         for field in expected_fields:
             assert field in workflow, f"Missing field: {field}"
+        
+        # Workflows may have either "tool" (singular) or "tools" (plural)
+        assert "tool" in workflow or "tools" in workflow, "Workflow should have either 'tool' or 'tools' field"
 
     def test_adapter_creation_workflow(self):
         """Test that the adapter creation workflow is available."""
@@ -52,21 +58,34 @@ class TestAvailableWorkflows:
         assert adapter_workflow is not None, "Adapter creation workflow should be available"
         
         assert adapter_workflow["name"] == "BioCypher Adapter Creation"
-        assert "adaptive analysis" in adapter_workflow["description"]
-        assert adapter_workflow["status"] == "available"
+        assert "5-phase workflow" in adapter_workflow["description"]
+        assert "supporting_tools" in adapter_workflow
 
-    def test_framework_overview(self):
-        """Test that the framework overview is provided."""
+    def test_project_creation_workflow(self):
+        """Test that the project creation workflow is available."""
         result = get_available_workflows()
-        overview = result["framework_overview"]
+        workflows = result["workflows"]
         
-        assert "name" in overview
-        assert "description" in overview
-        assert "core_principles" in overview
+        project_workflow = next((w for w in workflows if w["id"] == "project_creation"), None)
+        assert project_workflow is not None, "Project creation workflow should be available"
         
-        assert overview["name"] == "BioCypher Adapter Creation Framework"
-        assert isinstance(overview["core_principles"], list)
-        assert len(overview["core_principles"]) == 3
+        assert project_workflow["name"] == "BioCypher Project Creation"
+        assert "cookiecutter" in project_workflow["description"].lower()
+        assert "tools" in project_workflow
+        assert "check_project_exists" in project_workflow["tools"]
+        assert "get_cookiecutter_instructions" in project_workflow["tools"]
+
+    def test_supporting_tools(self):
+        """Test that supporting tools are provided."""
+        result = get_available_workflows()
+        supporting_tools = result["supporting_tools"]
+        
+        assert isinstance(supporting_tools, list)
+        assert len(supporting_tools) > 0
+        
+        for tool in supporting_tools:
+            assert "tool" in tool
+            assert "description" in tool
 
 
 class TestAdapterCreationWorkflow:
@@ -331,7 +350,9 @@ class TestMCPToolIntegration:
             get_adapter_creation_workflow,
             get_phase_guidance,
             get_implementation_patterns,
-            get_decision_guidance
+            get_decision_guidance,
+            check_project_exists,
+            get_cookiecutter_instructions
         ]
         
         for tool in tools:
@@ -344,6 +365,8 @@ class TestMCPToolIntegration:
         assert isinstance(get_phase_guidance(1), dict)
         assert isinstance(get_implementation_patterns(), dict)
         assert isinstance(get_decision_guidance({}), dict)
+        assert isinstance(check_project_exists(), dict)
+        assert isinstance(get_cookiecutter_instructions(), dict)
 
     def test_hierarchical_navigation(self):
         """Test that the tools support hierarchical navigation."""
@@ -366,3 +389,90 @@ class TestMCPToolIntegration:
         # Get decision guidance
         guidance = get_decision_guidance({"structure_type": "flat"})
         assert len(guidance["recommendations"]) > 0
+
+
+class TestProjectCreation:
+    """Test the project creation tools."""
+
+    def test_check_project_exists_structure(self):
+        """Test that check_project_exists returns the expected structure."""
+        result = check_project_exists()
+        
+        assert "project_path" in result
+        assert "expected_structure" in result
+        assert "instruction_if_not_exists" in result
+        assert "cookiecutter_template_url" in result
+        assert "cookiecutter" in result["instruction_if_not_exists"].lower()
+        assert "MUST" in result["instruction_if_not_exists"] or "must" in result["instruction_if_not_exists"]
+
+    def test_check_project_exists_with_path(self, tmp_path):
+        """Test checking project existence with a specific path."""
+        result = check_project_exists(str(tmp_path))
+        
+        assert result["project_path"] == str(tmp_path.resolve())
+        assert "expected_structure" in result
+        assert "instruction_if_not_exists" in result
+        assert "cookiecutter" in result["instruction_if_not_exists"].lower()
+        assert "MUST" in result["instruction_if_not_exists"] or "must" in result["instruction_if_not_exists"]
+
+    def test_check_project_exists_returns_structure(self, tmp_path):
+        """Test that check_project_exists returns expected structure regardless of project existence."""
+        # Create a minimal BioCypher project structure
+        (tmp_path / "create_knowledge_graph.py").write_text("# Test")
+        (tmp_path / "config").mkdir()
+        (tmp_path / "config" / "biocypher_config.yaml").write_text("test: config")
+        (tmp_path / "config" / "schema_config.yaml").write_text("test: schema")
+        (tmp_path / "pyproject.toml").write_text("[project]\nname = 'test'")
+        (tmp_path / "src").mkdir()
+        
+        result = check_project_exists(str(tmp_path))
+        
+        # Function should return structure and instructions regardless of whether project exists
+        assert "expected_structure" in result
+        assert "instruction_if_not_exists" in result
+        assert "cookiecutter_template_url" in result
+
+    def test_check_project_exists_expected_structure(self):
+        """Test that expected_structure contains the correct information."""
+        result = check_project_exists()
+        expected = result["expected_structure"]
+        
+        assert "root" in expected
+        assert "directories" in expected
+        assert "files" in expected
+        assert isinstance(expected["directories"], list)
+        assert isinstance(expected["files"], list)
+        assert "config/" in expected["directories"]
+        assert "create_knowledge_graph.py" in expected["files"]
+        assert "config/biocypher_config.yaml" in expected["files"]
+
+    def test_get_cookiecutter_instructions_structure(self):
+        """Test that get_cookiecutter_instructions returns the expected structure."""
+        result = get_cookiecutter_instructions()
+        
+        assert "template_url" in result
+        assert "installation" in result
+        assert "usage" in result
+        assert "expected_output" in result
+        assert "important_notes" in result
+
+    def test_get_cookiecutter_instructions_content(self):
+        """Test that cookiecutter instructions contain the expected content."""
+        result = get_cookiecutter_instructions()
+        
+        assert "biocypher-cookiecutter-template" in result["template_url"]
+        assert "methods" in result["installation"]
+        assert len(result["installation"]["methods"]) > 0
+        assert "command" in result["usage"]
+        assert "cookiecutter" in result["usage"]["command"]
+        assert isinstance(result["important_notes"], list)
+        assert len(result["important_notes"]) > 0
+
+    def test_get_cookiecutter_instructions_installation_methods(self):
+        """Test that installation methods are provided."""
+        result = get_cookiecutter_instructions()
+        methods = result["installation"]["methods"]
+        
+        method_names = [m["method"] for m in methods]
+        assert "pip" in method_names
+        assert "cookiecutter" in methods[0]["command"]

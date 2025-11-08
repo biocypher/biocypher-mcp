@@ -16,7 +16,9 @@ from .main import (
     get_adapter_creation_workflow,
     get_phase_guidance,
     get_implementation_patterns,
-    get_decision_guidance
+    get_decision_guidance,
+    check_project_exists,
+    get_cookiecutter_instructions
 )
 
 
@@ -36,6 +38,11 @@ class ErrorResponse(BaseModel):
     """Model for error responses."""
     error: str
     detail: Optional[str] = None
+
+
+class ProjectPathRequest(BaseModel):
+    """Model for project path check requests."""
+    project_path: str = "."
 
 
 # Create FastAPI app
@@ -72,6 +79,8 @@ async def root():
             "patterns": "/patterns",
             "patterns_specific": "/patterns/{pattern_type}",
             "decision_guidance": "/decision-guidance",
+            "check_project": "/project/check",
+            "cookiecutter_instructions": "/project/cookiecutter-instructions",
             "docs": "/docs"
         }
     }
@@ -141,6 +150,24 @@ async def get_decision(data_characteristics: DataCharacteristics):
         return get_decision_guidance(data_dict)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating decision guidance: {str(e)}")
+
+
+@app.post("/project/check", response_model=Dict[str, Any])
+async def check_project(request: ProjectPathRequest):
+    """Check if a BioCypher project exists at the given path."""
+    try:
+        return check_project_exists(request.project_path)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error checking project: {str(e)}")
+
+
+@app.get("/project/cookiecutter-instructions", response_model=Dict[str, Any])
+async def get_cookiecutter_info():
+    """Get instructions for creating a BioCypher project using cookiecutter."""
+    try:
+        return get_cookiecutter_instructions()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving instructions: {str(e)}")
 
 
 @app.get("/health", response_model=Dict[str, str])

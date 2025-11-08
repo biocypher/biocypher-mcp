@@ -3,10 +3,11 @@
 # This module provides a hierarchical MCP tool for BioCypher workflows
 ################################################################################
 from typing import Any, Dict, List, Optional
+from pathlib import Path
 from fastmcp import FastMCP
 
 
-def get_available_workflows() -> Dict[str, Any]:
+def get_available_workflows() -> dict[str, Any]:
     """
     Main entry point tool that provides information about available BioCypher workflows.
     
@@ -16,28 +17,33 @@ def get_available_workflows() -> Dict[str, Any]:
     return {
         "workflows": [
             {
+                "id": "project_creation",
+                "name": "BioCypher Project Creation",
+                "description": "Check if a BioCypher project exists and get instructions for creating one using cookiecutter.",
+                "tools": ["check_project_exists", "get_cookiecutter_instructions"]
+            },
+            {
                 "id": "adapter_creation",
                 "name": "BioCypher Adapter Creation",
-                "description": "Create BioCypher adapters for any data source using adaptive analysis and implementation strategies",
-                "status": "available",
-                "complexity": "adaptive",
-                "estimated_time": "30-120 minutes",
-                "prerequisites": [
-                    "Data source to be integrated",
-                    "Basic understanding of BioCypher concepts",
-                    "Python development environment"
+                "description": "5-phase workflow for creating BioCypher adapters from any data source",
+                "tool": "get_adapter_creation_workflow",
+                "supporting_tools": [
+                    "get_phase_guidance",
+                    "get_implementation_patterns",
+                    "get_decision_guidance"
                 ]
             }
         ],
-        "framework_overview": {
-            "name": "BioCypher Adapter Creation Framework",
-            "description": "A generalized framework for creating BioCypher adapters from any data source, with adaptive analysis and implementation strategies",
-            "core_principles": [
-                "Data-First Approach",
-                "Schema-Driven Development", 
-                "Iterative Refinement"
-            ]
-        }
+        "supporting_tools": [
+            {
+                "tool": "get_schema_configuration_guidance",
+                "description": "Guidance on BioCypher schema configuration"
+            },
+            {
+                "tool": "get_resource_management_guidance",
+                "description": "Guidance on resource management and caching"
+            }
+        ]
     }
 
 
@@ -617,9 +623,9 @@ def get_resource_management_guidance() -> Dict[str, Any]:
     return {
         "resource_management_overview": {
             "name": "BioCypher Resource Management",
-            "description": "Resource management handles downloading, caching, and managing data sources for BioCypher pipelines",
+            "description": "Resource management handles downloading, caching, and managing data sources for BioCypher projects",
             "documentation_reference": "https://biocypher.org/BioCypher/reference/source/download-cache/",
-            "pipeline_position": "Beginning of pipeline - data source acquisition"
+            "pipeline_position": "Beginning of project - data source acquisition"
         },
         "core_components": {
             "resource_base_class": {
@@ -710,11 +716,136 @@ paths = downloader.download(protein_data)
     }
 
 
+def check_project_exists(project_path: str = ".") -> Dict[str, Any]:
+    """
+    Returns the expected BioCypher project structure and instructions for project creation.
+    
+    This function provides the expected structure that should be created by the cookiecutter template.
+    You should check the files and directories yourself to determine if a project already exists.
+    
+    IMPORTANT: If you determine that the project does NOT exist, you MUST use cookiecutter to create it.
+    Do NOT manually create the project structure. Always use the cookiecutter template.
+    
+    Args:
+        project_path: Path to check for an existing project (default: current directory)
+        
+    Returns:
+        Dict containing:
+        - project_path: The path that was checked
+        - expected_structure: The expected directory structure from cookiecutter template
+        - instruction_if_not_exists: Clear instruction on what to do if the project doesn't exist
+        - cookiecutter_template_url: URL of the cookiecutter template
+    """
+    from pathlib import Path
+    
+    path = Path(project_path).resolve()
+    
+    # Expected structure from cookiecutter template
+    expected_structure = {
+        "root": "my-biocypher-pipeline/",
+        "directories": [
+            "config/",
+            "src/my_biocypher_pipeline/",
+            "src/my_biocypher_pipeline/adapters/",
+            "tests/"
+        ],
+        "files": [
+            "config/biocypher_config.yaml",
+            "config/schema_config.yaml",
+            "src/my_biocypher_pipeline/__init__.py",
+            "src/my_biocypher_pipeline/adapters/__init__.py",
+            "src/my_biocypher_pipeline/adapters/my_resource_adapter.py",
+            "tests/__init__.py",
+            "tests/test_my_resource_adapter.py",
+            "create_knowledge_graph.py",
+            "docker-compose.yml",
+            "Dockerfile",
+            "pyproject.toml",
+            "README.md",
+            ".gitignore"
+        ]
+    }
+    
+    instruction_if_not_exists = (
+        "If the project does NOT exist at this location, you MUST use cookiecutter to create it. "
+        "Do NOT manually create files or directories. "
+        "Call get_cookiecutter_instructions() to get the exact commands needed, "
+        "then run cookiecutter with the template URL: https://github.com/biocypher/biocypher-cookiecutter-template.git"
+    )
+    
+    return {
+        "project_path": str(path),
+        "expected_structure": expected_structure,
+        "instruction_if_not_exists": instruction_if_not_exists,
+        "cookiecutter_template_url": "https://github.com/biocypher/biocypher-cookiecutter-template"
+    }
+
+
+def get_cookiecutter_instructions() -> Dict[str, Any]:
+    """
+    Provides instructions on how to create a BioCypher project using cookiecutter.
+    
+    This function informs users how to install cookiecutter (if not present) and
+    how to run it to create a new BioCypher project. It does not make assumptions
+    about directory structure or project name - the LLM should check with the user
+    for these details.
+    
+    Returns:
+        Dict containing installation and usage instructions for cookiecutter
+    """
+    return {
+        "template_url": "https://github.com/biocypher/biocypher-cookiecutter-template",
+        "installation": {
+            "description": "Install cookiecutter if not already installed",
+            "methods": [
+                {
+                    "method": "pip",
+                    "command": "pip install cookiecutter"
+                },
+                {
+                    "method": "conda",
+                    "command": "conda install -c conda-forge cookiecutter"
+                },
+                {
+                    "method": "uv",
+                    "command": "uv pip install cookiecutter"
+                }
+            ]
+        },
+        "usage": {
+            "description": "Run cookiecutter to create a new BioCypher project",
+            "command": "cookiecutter https://github.com/biocypher/biocypher-cookiecutter-template.git",
+            "interactive_mode": "Cookiecutter will prompt you for project details interactively",
+            "non_interactive_mode": {
+                "description": "To run non-interactively, use the --no-input flag and provide context",
+                "command": "cookiecutter https://github.com/biocypher/biocypher-cookiecutter-template.git --no-input",
+                "note": "You'll need to provide all required parameters via --extra-context or a config file"
+            }
+        },
+        "expected_output": {
+            "description": "After running cookiecutter, you should have a project directory with the structure shown by check_project_exists()",
+            "next_steps": [
+                "Navigate to the created project directory",
+                "Install dependencies (e.g., 'uv sync' or 'poetry install')",
+                "Review and customize the generated files",
+                "Implement your adapter in src/<project_name>/adapters/"
+            ]
+        },
+        "important_notes": [
+            "Ask the user for the desired project name and location before running cookiecutter",
+            "The cookiecutter template will prompt for various configuration options",
+            "More information can be found in the cookiecutter README at the template URL"
+        ]
+    }
+
+
 # Create the FastMCP instance
 mcp = FastMCP("biocypher_mcp")
 
 # Register all tools
 mcp.tool(get_available_workflows)
+mcp.tool(check_project_exists)
+mcp.tool(get_cookiecutter_instructions)
 mcp.tool(get_adapter_creation_workflow)
 mcp.tool(get_phase_guidance)
 mcp.tool(get_implementation_patterns)
