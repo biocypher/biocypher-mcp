@@ -463,8 +463,9 @@ class TestProjectCreation:
         assert "biocypher-cookiecutter-template" in result["template_url"]
         assert "methods" in result["installation"]
         assert len(result["installation"]["methods"]) > 0
-        assert "command" in result["usage"]
-        assert "cookiecutter" in result["usage"]["command"]
+        assert "non_interactive_mode" in result["usage"]
+        command_template = result["usage"]["non_interactive_mode"]["command_template"]
+        assert "cookiecutter" in command_template
         assert isinstance(result["important_notes"], list)
         assert len(result["important_notes"]) > 0
 
