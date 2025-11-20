@@ -40,7 +40,7 @@ Add the following configuration to your MCP settings (typically `mcp.json`):
 {
   "mcpServers": {
     "biocypher-mcp": {
-      "url": "https://mcp.biocypher.org/",
+      "url": "https://mcp.biocypher.org/mcp",
       "transport": "http"
     }
   }
