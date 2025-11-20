@@ -51,6 +51,8 @@ def get_adapter_creation_workflow() -> Dict[str, Any]:
     """
     Provides detailed information about the adapter creation workflow.
     
+    For implementation details, code examples, and patterns, refer to the dedicated BioCypher LLM documentation.
+    
     Returns:
         Dict containing the workflow structure and phases
     """
@@ -58,6 +60,16 @@ def get_adapter_creation_workflow() -> Dict[str, Any]:
         "workflow_id": "adapter_creation",
         "name": "BioCypher Adapter Creation Workflow",
         "description": "Complete workflow for creating BioCypher adapters from any data source",
+        "llm_documentation": {
+            "primary_reference": "https://biocypher.org/BioCypher/llms.txt",
+            "adapter_guide": "https://biocypher.org/BioCypher/llms-adapters.txt - Complete guide for creating BioCypher adapters",
+            "example_adapter": "https://biocypher.org/BioCypher/llms-example-adapter.txt - Full working example of a GEO adapter",
+            "key_sections": [
+                "Adapters section - Interface, node/edge formats",
+                "Common Patterns > Adapter Patterns",
+                "Data Processing - Node/edge creation formats"
+            ]
+        },
         "phases": [
             {
                 "phase": 1,
@@ -141,6 +153,10 @@ def get_phase_guidance(phase_number: int) -> Dict[str, Any]:
     """
     Provides detailed guidance for a specific phase of the adapter creation workflow.
     
+    For implementation code examples and patterns, refer to the BioCypher LLM documentation:
+    - https://biocypher.org/BioCypher/llms-adapters.txt (adapter guide)
+    - https://biocypher.org/BioCypher/llms-example-adapter.txt (working example)
+    
     Args:
         phase_number: The phase number (1-5) to get guidance for
         
@@ -198,7 +214,8 @@ def assess_schema_requirements(data_analysis, existing_schema=None):
                 "Data source type identification",
                 "Structure analysis report", 
                 "Schema requirements assessment"
-            ]
+            ],
+            "llm_documentation_reference": "For adapter interface details and data formats, see https://biocypher.org/BioCypher/llms-adapters.txt"
         },
         2: {
             "phase_name": "Implementation Strategy Design",
@@ -255,7 +272,8 @@ def design_extraction_strategy(data_analysis):
             "outputs_expected": [
                 "Architecture choice (Simple/Series/Hierarchical/Custom)",
                 "Extraction strategy document"
-            ]
+            ],
+            "llm_documentation_reference": "For adapter patterns and implementation strategies, see https://biocypher.org/BioCypher/llms.txt > Common Patterns > Adapter Patterns"
         },
         3: {
             "phase_name": "Implementation",
@@ -311,7 +329,8 @@ def map_fields_to_schema(self, data_item, field_mapping):
             "outputs_expected": [
                 "Working adapter code",
                 "Field mapping configuration"
-            ]
+            ],
+            "llm_documentation_reference": "For implementation details, node/edge formats, and working examples, see https://biocypher.org/BioCypher/llms-example-adapter.txt and https://biocypher.org/BioCypher/llms-adapters.txt"
         },
         4: {
             "phase_name": "Quality Assurance",
@@ -410,6 +429,11 @@ def generate_adaptive_documentation(adapter, data_analysis):
 def get_implementation_patterns(pattern_type: Optional[str] = None) -> Dict[str, Any]:
     """
     Provides implementation patterns for different data scenarios.
+    
+    For comprehensive adapter patterns and working examples, refer to:
+    - https://biocypher.org/BioCypher/llms.txt > Common Patterns > Adapter Patterns
+    - https://biocypher.org/BioCypher/llms-adapters.txt (complete adapter guide)
+    - https://biocypher.org/BioCypher/llms-example-adapter.txt (working GEO adapter example)
     
     Args:
         pattern_type: Optional specific pattern type to retrieve
@@ -552,167 +576,83 @@ def get_decision_guidance(data_characteristics: Dict[str, Any]) -> Dict[str, Any
 
 def get_schema_configuration_guidance() -> Dict[str, Any]:
     """
-    Provides comprehensive guidance on BioCypher schema configuration.
+    Provides guidance on BioCypher schema configuration.
+    
+    For comprehensive details, refer to the dedicated BioCypher LLM documentation.
     
     Returns:
-        Dict containing schema configuration guidance and best practices
+        Dict containing schema configuration overview and references to detailed documentation
     """
     return {
-        "schema_configuration_overview": {
+        "overview": {
             "name": "BioCypher Schema Configuration",
-            "description": "Schema configuration defines how data sources map to BioCypher's ontological structure",
+            "description": "Schema configuration defines how data sources map to BioCypher's ontological structure using YAML",
             "file_location": "config/schema_config.yaml",
-            "documentation_reference": "https://biocypher.org/BioCypher/learn/tutorials/tutorial002_handling_ontologies/"
+            "key_concept": "Uses input_label to map adapter outputs to schema concepts"
         },
-        "schema_file_structure": {
-            "standard_location": "config/schema_config.yaml",
-            "alternative_locations": [
-                "schema_config.yaml",
-                "config/schema.yaml",
-                "biocypher_schema.yaml"
-            ],
+        "llm_documentation": {
+            "primary_reference": "https://biocypher.org/BioCypher/llms.txt",
+            "schema_section": "Schema Configuration section in llms.txt",
+            "details": [
+                "YAML-based schema definition",
+                "Defines node types, edge types, and their properties",
+                "Uses input_label to map adapter outputs to schema concepts",
+                "Supports inheritance and property overrides"
+            ]
+        },
+        "quick_reference": {
             "file_format": "YAML",
-            "naming_convention": "schema_config.yaml"
+            "standard_location": "config/schema_config.yaml",
+            "core_fields": [
+                "represented_as: node or edge",
+                "preferred_id: identifier source",
+                "input_label: data source field name (must match adapter output)"
+            ],
+            "additional_resources": [
+                "https://biocypher.org/BioCypher/learn/tutorials/tutorial002_handling_ontologies/",
+                "https://biocypher.org/BioCypher/llms-adapters.txt (for adapter examples)"
+            ]
         },
-        "core_concepts": {
-            "ontology_grounding": {
-                "description": "BioCypher uses ontologies to ground knowledge graph contents in biology",
-                "benefits": [
-                    "Machine readability and automation capabilities",
-                    "Accessibility for biologically oriented researchers",
-                    "Standardized terminology and relationships"
-                ],
-                "default_ontology": "Biolink model"
-            },
-            "schema_configuration": {
-                "description": "YAML file that maps data concepts to ontological classes",
-                "purpose": "Define how data sources map to BioCypher's ontological structure",
-                "key_components": [
-                    "Class definitions",
-                    "Property mappings", 
-                    "Relationship definitions",
-                    "Ontology inheritance"
-                ]
-            }
-        },
-        "schema_configuration_guidelines": {
-            "basic_structure": {
-                "description": "Each class in schema_config.yaml defines how data maps to ontological concepts",
-                "required_fields": [
-                    "represented_as: node or edge",
-                    "preferred_id: identifier source",
-                    "input_label: data source field name"
-                ],
-                "optional_fields": [
-                    "synonym_for: ontology class synonym",
-                    "is_a: parent ontology class",
-                    "properties: additional attributes"
-                ]
-            }
-        }
+        "note": "For detailed schema configuration examples and patterns, refer to the BioCypher LLM documentation at https://biocypher.org/BioCypher/llms.txt"
     }
 
 
 def get_resource_management_guidance() -> Dict[str, Any]:
     """
-    Provides comprehensive guidance on BioCypher resource management and download/cache functionality.
+    Provides guidance on BioCypher resource management and download/cache functionality.
+    
+    For comprehensive details, refer to the dedicated BioCypher LLM documentation.
     
     Returns:
-        Dict containing resource management guidance and best practices
+        Dict containing resource management overview and references to detailed documentation
     """
     return {
-        "resource_management_overview": {
+        "overview": {
             "name": "BioCypher Resource Management",
             "description": "Resource management handles downloading, caching, and managing data sources for BioCypher projects",
-            "documentation_reference": "https://biocypher.org/BioCypher/reference/source/download-cache/",
             "pipeline_position": "Beginning of project - data source acquisition"
         },
-        "core_components": {
-            "resource_base_class": {
-                "name": "Resource Base Class",
-                "description": "Abstract base class for managing downloadable resources",
-                "location": "biocypher/biocypher/_get.py",
-                "key_features": [
-                    "File downloads",
-                    "API requests", 
-                    "Local caching",
-                    "Lifetime management"
-                ]
-            },
-            "downloader": {
-                "name": "Downloader",
-                "description": "Manages resource downloads and caching",
-                "key_features": [
-                    "Automatic caching",
-                    "Lifetime management",
-                    "Cache validation",
-                    "Multiple resource handling"
-                ]
-            },
+        "llm_documentation": {
+            "primary_reference": "https://biocypher.org/BioCypher/llms.txt",
+            "utility_functions_section": "Utility Functions > Download and Cache section in llms.txt",
+            "available_functions": [
+                "download_and_cache_file(): Download files with caching",
+                "download_and_cache_ftp(): FTP file downloads",
+                "download_and_cache_http(): HTTP file downloads"
+            ]
+        },
+        "quick_reference": {
             "resource_types": {
-                "file_download": {
-                    "name": "FileDownload",
-                    "description": "Downloads files from URLs",
-                    "use_case": "Static data files, databases, ontologies"
-                },
-                "api_request": {
-                    "name": "APIRequest", 
-                    "description": "Makes API requests and caches responses",
-                    "use_case": "REST APIs, web services, dynamic data"
-                }
-            }
-        },
-        "resource_initialization": {
-            "basic_structure": {
-                "description": "Initialize a Resource with name, URL(s), and lifetime",
-                "required_parameters": [
-                    "name: Resource identifier",
-                    "url_s: URL or list of URLs",
-                    "lifetime: Cache lifetime in days (0 = permanent)"
-                ],
-                "example": """
-from biocypher import FileDownload
-
-# Single file resource
-protein_data = FileDownload(
-    name="uniprot_proteins",
-    url_s="https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.dat.gz",
-    lifetime=7  # Refresh weekly
-)
-
-# Multiple file resource
-pathway_data = FileDownload(
-    name="reactome_pathways", 
-    url_s=[
-        "https://reactome.org/download/current/ReactomePathways.txt",
-        "https://reactome.org/download/current/ReactomePathwaysRelation.txt"
-    ],
-    lifetime=30  # Refresh monthly
-)
-"""
-            }
-        },
-        "downloader_usage": {
-            "initialization": {
-                "description": "Initialize Downloader with optional cache directory",
-                "example": """
-from biocypher import Downloader
-
-# Use default temporary directory
-downloader = Downloader()
-
-# Use custom cache directory
-downloader = Downloader(cache_dir="/path/to/cache")
-"""
+                "FileDownload": "Downloads files from URLs (static data files, databases, ontologies)",
+                "APIRequest": "Makes API requests and caches responses (REST APIs, web services)"
             },
-            "downloading_resources": {
-                "description": "Download resources with automatic caching",
-                "example": """
-# Download single resource
-paths = downloader.download(protein_data)
-"""
-            }
-        }
+            "basic_usage": "Initialize Resource with name, URL(s), and lifetime. Use Downloader for managing downloads and caching.",
+            "additional_resources": [
+                "https://biocypher.org/BioCypher/reference/source/download-cache/",
+                "https://biocypher.org/BioCypher/llms-adapters.txt (for adapter examples using resources)"
+            ]
+        },
+        "note": "For detailed resource management examples, code patterns, and API reference, refer to the BioCypher LLM documentation at https://biocypher.org/BioCypher/llms.txt"
     }
 
 
@@ -813,13 +753,77 @@ def get_cookiecutter_instructions() -> Dict[str, Any]:
             ]
         },
         "usage": {
-            "description": "Run cookiecutter to create a new BioCypher project",
-            "command": "cookiecutter https://github.com/biocypher/biocypher-cookiecutter-template.git",
-            "interactive_mode": "Cookiecutter will prompt you for project details interactively",
+            "description": "Run cookiecutter to create a new BioCypher project (always non-interactive; pre-fill everything you can)",
             "non_interactive_mode": {
-                "description": "To run non-interactively, use the --no-input flag and provide context",
-                "command": "cookiecutter https://github.com/biocypher/biocypher-cookiecutter-template.git --no-input",
-                "note": "You'll need to provide all required parameters via --extra-context or a config file"
+                "description": (
+                    "Determine sensible defaults for every cookiecutter prompt first. "
+                    "Only ask the user for values that cannot be inferred or that they explicitly want to control. "
+                    "After confirming any custom values, run cookiecutter with --no-input and pass key=value pairs "
+                    "for every prompt so no terminal interaction is required."
+                ),
+                "default_context_strategy": [
+                    {
+                        "field": "project_name",
+                        "default": "Ask the user for their desired project/directory name (required)."
+                    },
+                    {
+                        "field": "package_name",
+                        "default": "project_name converted to snake_case."
+                    },
+                    {
+                        "field": "adapter_name",
+                        "default": "package_name + '_adapter'."
+                    },
+                    {
+                        "field": "project_description",
+                        "default": "Brief sentence like 'BioCypher project for <data source>' if known."
+                    },
+                    {
+                        "field": "data_source_type",
+                        "default": "\"file\" unless the user indicates api/database/custom."
+                    },
+                    {
+                        "field": "include_docker / include_tests / schema_config",
+                        "default": "\"y\" unless the user requests otherwise."
+                    },
+                    {
+                        "field": "author_name / author_email / version",
+                        "default": "\"BioCypher User\", \"user@example.com\", \"0.1.0\" (override if the user provides real info)."
+                    }
+                ],
+                "required_context": [
+                    "project_name",
+                    "project_description",
+                    "package_name",
+                    "adapter_name",
+                    "data_source_type",
+                    "include_docker (\"y\" or \"n\")",
+                    "include_tests (\"y\" or \"n\")",
+                    "schema_config (\"y\" or \"n\")",
+                    "author_name",
+                    "author_email",
+                    "version"
+                ],
+                "command_template": (
+                    "cookiecutter https://github.com/biocypher/biocypher-cookiecutter-template.git "
+                    "--no-input "
+                    "project_name=\"{project_name}\" "
+                    "project_description=\"{project_description}\" "
+                    "package_name=\"{package_name}\" "
+                    "adapter_name=\"{adapter_name}\" "
+                    "data_source_type=\"{data_source_type}\" "
+                    "include_docker=\"{include_docker}\" "
+                    "include_tests=\"{include_tests}\" "
+                    "schema_config=\"{schema_config}\" "
+                    "author_name=\"{author_name}\" "
+                    "author_email=\"{author_email}\" "
+                    "version=\"{version}\""
+                ),
+                "notes": [
+                    "Pre-fill defaults and only ask the user for fields that cannot be inferred or that they want to customize.",
+                    "Confirm the final context before running the command.",
+                    "Never run interactive cookiecutter prompts; always provide the complete context yourself."
+                ]
             }
         },
         "expected_output": {
