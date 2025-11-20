@@ -1,4 +1,7 @@
-# biocypher-mcp
+# An MCP server for building BioCypher knowledge graphs with copilot assistance
+
+> [!NOTE]
+> This is an incomplete prototype for demonstration purposes.
 
 An MCP (Model Context Protocol) server for assisting with BioCypher workflows. This server provides hierarchical tools to help LLM agents create BioCypher adapters for any data source.
 
