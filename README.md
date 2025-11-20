@@ -81,17 +81,27 @@ Replace `/path/to/biocypher-mcp` with the actual path to your cloned repository.
 
 ### Docker Deployment
 
+The project includes both a `Dockerfile` (for building the container image) and `docker-compose.yml` (for orchestrating services). Two services are available:
+
+- **`biocypher-mcp`** (production): Runs on port 8000 with HTTP transport, suitable for production deployment
+- **`biocypher-mcp-dev`** (development): Runs on port 8001 with HTTP transport and hot reload (source code mounted as volume)
+
 ```bash
-# Build and run with docker-compose (production)
+# Build and run production service (port 8000)
 docker-compose up -d biocypher-mcp
 
-# Or run development version with hot reload
+# Or run development version with hot reload (port 8001)
 docker-compose up -d biocypher-mcp-dev
 
 # Check status
 docker-compose ps
 docker-compose logs biocypher-mcp
+
+# Stop services
+docker-compose down
 ```
+
+**Note:** Both services use HTTP transport by default. The production service uses the Dockerfile's default CMD, while the dev service mounts your local `src/` directory for live code changes.
 
 ## Available Tools
 

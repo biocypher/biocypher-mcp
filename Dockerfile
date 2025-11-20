@@ -34,4 +34,4 @@ EXPOSE 8000
 # Health check moved to nginx
 
 # Run the MCP server with streamable HTTP transport
-CMD ["uv", "run", "python", "-m", "biocypher_mcp.main"]
+CMD ["uv", "run", "python", "-m", "biocypher_mcp.main", "--transport", "http"]

@@ -22,7 +22,7 @@ services:
     volumes:
       - ./src:/app/src
       - ./logs:/app/logs
-    command: ["uv", "run", "python", "-m", "biocypher_mcp.main"]
+    command: ["uv", "run", "python", "-m", "biocypher_mcp.main", "--transport", "http"]
     networks:
       - biocypher-network
 
