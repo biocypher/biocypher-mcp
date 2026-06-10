@@ -18,7 +18,8 @@ from .main import (
     get_implementation_patterns,
     get_decision_guidance,
     check_project_exists,
-    get_cookiecutter_instructions
+    get_cookiecutter_instructions,
+    validate_schema_config,
 )
 
 
@@ -43,6 +44,17 @@ class ErrorResponse(BaseModel):
 class ProjectPathRequest(BaseModel):
     """Model for project path check requests."""
     project_path: str = "."
+
+
+class SchemaConfigRequest(BaseModel):
+    """Model for schema config validation requests.
+
+    Only raw YAML content is accepted over HTTP. Server-side file paths are
+    intentionally not exposed here: a remote caller has no meaningful local
+    paths, and allowing one would let clients read arbitrary server files.
+    Use the MCP/stdio tool's `schema_config_path` for local file validation.
+    """
+    schema_config_content: str
 
 
 # Create FastAPI app
@@ -81,6 +93,7 @@ async def root():
             "decision_guidance": "/decision-guidance",
             "check_project": "/project/check",
             "cookiecutter_instructions": "/project/cookiecutter-instructions",
+            "validate_schema": "/schema/validate",
             "docs": "/docs"
         }
     }
@@ -168,6 +181,17 @@ async def get_cookiecutter_info():
         return get_cookiecutter_instructions()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving instructions: {str(e)}")
+
+
+@app.post("/schema/validate", response_model=Dict[str, Any])
+async def validate_schema(request: SchemaConfigRequest):
+    """Validate a BioCypher schema_config.yaml (raw YAML content) against the official schema rules."""
+    try:
+        return validate_schema_config(
+            schema_config_content=request.schema_config_content,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error validating schema config: {str(e)}")
 
 
 @app.get("/health", response_model=Dict[str, str])
