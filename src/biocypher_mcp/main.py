@@ -6,6 +6,28 @@ from typing import Any, Dict, List, Optional
 from pathlib import Path
 from fastmcp import FastMCP
 
+# Reference: BioCypher schema configuration semantics are defined in the official
+# repository at https://github.com/biocypher/biocypher (biocypher/_mapping.py and
+# the example biocypher/_config/test_schema_config.yaml). The rules below mirror
+# how BioCypher's mapping module parses and validates a schema_config.yaml.
+
+# Fields BioCypher recognises in a schema config entry.
+_KNOWN_SCHEMA_FIELDS = {
+    "represented_as",
+    "preferred_id",
+    "namespace",  # current preferred name for `preferred_id`
+    "input_label",
+    "label_in_input",  # deprecated alias of `input_label`
+    "is_a",
+    "synonym_for",
+    "properties",
+    "exclude_properties",
+    "inherit_properties",
+    "label_as_edge",
+    "db_collection_name",
+    "source",
+}
+
 
 def get_available_workflows() -> dict[str, Any]:
     """
@@ -42,6 +64,10 @@ def get_available_workflows() -> dict[str, Any]:
             {
                 "tool": "get_resource_management_guidance",
                 "description": "Guidance on resource management and caching"
+            },
+            {
+                "tool": "validate_schema_config",
+                "description": "Validate a schema_config.yaml against the official BioCypher schema configuration rules"
             }
         ]
     }
@@ -843,6 +869,240 @@ def get_cookiecutter_instructions() -> Dict[str, Any]:
     }
 
 
+def _to_list(value: Any) -> List[Any]:
+    """Mirror BioCypher's `_misc.to_list`: wrap non-list scalars in a list."""
+    if isinstance(value, (list, tuple)):
+        return list(value)
+    return [value]
+
+
+def _validate_schema_entry(name: str, entry: Any) -> Dict[str, List[str]]:
+    """
+    Validate a single entity entry of a BioCypher schema_config.yaml.
+
+    Returns a dict with "errors" and "warnings" lists for this entry.
+    """
+    errors: List[str] = []
+    warnings: List[str] = []
+
+    if not isinstance(entry, dict):
+        errors.append(
+            f"'{name}': entry must be a mapping of fields, got {type(entry).__name__}."
+        )
+        return {"errors": errors, "warnings": warnings}
+
+    # Unknown fields (typos are the most common schema_config mistake).
+    for field in entry:
+        if field not in _KNOWN_SCHEMA_FIELDS:
+            warnings.append(
+                f"'{name}': unknown field '{field}'. Known fields: "
+                f"{sorted(_KNOWN_SCHEMA_FIELDS)}."
+            )
+
+    # represented_as: entries without it are ignored by BioCypher (treated as
+    # non-entities), so a schema entry missing it is almost always a mistake.
+    if "represented_as" not in entry:
+        warnings.append(
+            f"'{name}': missing 'represented_as'. BioCypher will ignore this "
+            "entry (it is not treated as a graph node/edge). Add "
+            "'represented_as: node' or 'represented_as: edge'."
+        )
+    else:
+        for rep in _to_list(entry["represented_as"]):
+            if rep not in ("node", "edge"):
+                errors.append(
+                    f"'{name}': 'represented_as' must be 'node' or 'edge', "
+                    f"got '{rep}'."
+                )
+
+    # preferred_id / namespace deprecation handling.
+    if entry.get("namespace") is not None and entry.get("preferred_id") is not None:
+        warnings.append(
+            f"'{name}': both 'namespace' and 'preferred_id' set; BioCypher uses "
+            "'namespace' and ignores 'preferred_id'."
+        )
+    elif entry.get("preferred_id") is not None:
+        warnings.append(
+            f"'{name}': 'preferred_id' is deprecated; prefer 'namespace'."
+        )
+
+    # input_label / label_in_input.
+    if entry.get("input_label") is None and entry.get("label_in_input") is None:
+        warnings.append(
+            f"'{name}': no 'input_label' set. The entity will not match any "
+            "adapter output. Add 'input_label' matching your adapter labels."
+        )
+    elif entry.get("input_label") is None and entry.get("label_in_input") is not None:
+        warnings.append(
+            f"'{name}': 'label_in_input' is deprecated; use 'input_label' instead."
+        )
+
+    # is_a self-reference creates an inheritance loop (BioCypher drops the entry).
+    is_a = entry.get("is_a")
+    if is_a is not None:
+        if is_a == name or (isinstance(is_a, list) and name in is_a):
+            errors.append(
+                f"'{name}': 'is_a' refers to itself, creating an inheritance "
+                "loop. BioCypher will drop this entry."
+            )
+
+    # properties must be a name->type mapping.
+    if "properties" in entry and not isinstance(entry["properties"], dict):
+        errors.append(
+            f"'{name}': 'properties' must be a mapping of property name to type, "
+            f"got {type(entry['properties']).__name__}."
+        )
+
+    # inherit_properties must be boolean.
+    if "inherit_properties" in entry and not isinstance(
+        entry["inherit_properties"], bool
+    ):
+        warnings.append(
+            f"'{name}': 'inherit_properties' should be a boolean (True/False)."
+        )
+
+    # List-length consistency. BioCypher zips preferred_id/input_label/
+    # represented_as when building "virtual leaves" for multiple identifiers, so
+    # mismatched list lengths silently truncate to the shortest and drop data.
+    list_fields = {
+        f: entry[f]
+        for f in ("preferred_id", "namespace", "input_label", "represented_as")
+        if isinstance(entry.get(f), list)
+    }
+    if list_fields:
+        lengths = {f: len(v) for f, v in list_fields.items()}
+        if len(set(lengths.values())) > 1:
+            errors.append(
+                f"'{name}': list-valued fields have mismatched lengths {lengths}. "
+                "BioCypher pairs these positionally; differing lengths silently "
+                "drop entries. Make the lists the same length."
+            )
+
+    return {"errors": errors, "warnings": warnings}
+
+
+def validate_schema_config(
+    schema_config_path: Optional[str] = None,
+    schema_config_content: Optional[str] = None,
+) -> Dict[str, Any]:
+    """
+    Validate a BioCypher schema_config.yaml against the official BioCypher schema
+    configuration rules (https://github.com/biocypher/biocypher).
+
+    The MCP helps build adapters but does not otherwise check the generated
+    schema config. This tool parses the YAML and reports errors (problems that
+    will break the BioCypher run or silently drop data) and warnings (likely
+    mistakes such as typos, deprecated fields, or missing input labels).
+
+    Provide exactly one of `schema_config_path` or `schema_config_content`.
+
+    Args:
+        schema_config_path: Path to a schema_config.yaml file to validate.
+        schema_config_content: Raw YAML content of a schema config to validate.
+
+    Returns:
+        Dict containing:
+        - valid: True if no errors were found (warnings do not affect validity).
+        - errors: List of blocking problems.
+        - warnings: List of likely mistakes that do not block the run.
+        - entities_checked: Number of top-level entity entries validated.
+        - reference: Link to the official BioCypher schema configuration.
+    """
+    import yaml
+
+    reference = (
+        "https://github.com/biocypher/biocypher (biocypher/_mapping.py; example: "
+        "biocypher/_config/test_schema_config.yaml)"
+    )
+
+    if (schema_config_path is None) == (schema_config_content is None):
+        return {
+            "valid": False,
+            "errors": [
+                "Provide exactly one of 'schema_config_path' or "
+                "'schema_config_content'."
+            ],
+            "warnings": [],
+            "entities_checked": 0,
+            "reference": reference,
+        }
+
+    def _error(message: str) -> Dict[str, Any]:
+        return {
+            "valid": False,
+            "errors": [message],
+            "warnings": [],
+            "entities_checked": 0,
+            "reference": reference,
+        }
+
+    # Cap input size to avoid loading an arbitrarily large file into memory.
+    # A real schema config is a few KB; 10 MB is a generous ceiling.
+    max_bytes = 10 * 1024 * 1024
+
+    # Resolve the YAML source.
+    if schema_config_path is not None:
+        path = Path(schema_config_path)
+        if not path.is_file():
+            return _error(f"File not found: {path}")
+        try:
+            if path.stat().st_size > max_bytes:
+                return _error(
+                    f"File too large to validate ({path.stat().st_size} bytes; "
+                    f"limit {max_bytes})."
+                )
+            raw = path.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            return _error(f"File is not valid UTF-8 text: {path}")
+        except OSError as exc:
+            return _error(f"Could not read file '{path}': {exc}")
+    else:
+        raw = schema_config_content
+        if len(raw.encode("utf-8")) > max_bytes:
+            return _error(
+                f"Schema content too large to validate (limit {max_bytes} bytes)."
+            )
+
+    # Parse YAML. safe_load prevents arbitrary object construction (never use
+    # yaml.load here). The size cap above bounds memory; deeply nested input can
+    # still exhaust the recursion limit, which raises RecursionError rather than
+    # a YAMLError, so we catch it explicitly and return a clean result.
+    try:
+        data = yaml.safe_load(raw)
+    except yaml.YAMLError as exc:
+        return _error(f"Invalid YAML: {exc}")
+    except RecursionError:
+        return _error("Schema config is too deeply nested to parse.")
+
+    if data is None:
+        return _error("Schema config is empty.")
+
+    if not isinstance(data, dict):
+        return _error(
+            "Top level of a schema config must be a mapping of entity name "
+            f"to its definition, got {type(data).__name__}."
+        )
+
+    errors: List[str] = []
+    warnings: List[str] = []
+
+    for name, entry in data.items():
+        result = _validate_schema_entry(str(name), entry)
+        errors.extend(result["errors"])
+        warnings.extend(result["warnings"])
+
+    if not data:
+        warnings.append("Schema config has no entity entries.")
+
+    return {
+        "valid": len(errors) == 0,
+        "errors": errors,
+        "warnings": warnings,
+        "entities_checked": len(data),
+        "reference": reference,
+    }
+
+
 # Create the FastMCP instance
 mcp = FastMCP("biocypher_mcp")
 
@@ -856,6 +1116,7 @@ mcp.tool(get_implementation_patterns)
 mcp.tool(get_decision_guidance)
 mcp.tool(get_schema_configuration_guidance)
 mcp.tool(get_resource_management_guidance)
+mcp.tool(validate_schema_config)
 
 
 # --- Streamable HTTP transport (ASGI app) ---

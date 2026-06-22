@@ -121,6 +121,7 @@ The MCP server provides the following tools:
 ### Configuration Tools
 - **`get_schema_configuration_guidance`** - Get guidance on BioCypher schema configuration
 - **`get_resource_management_guidance`** - Get guidance on resource management and caching
+- **`validate_schema_config`** - Validate a `schema_config.yaml` against the official BioCypher schema configuration rules (from [biocypher/biocypher](https://github.com/biocypher/biocypher)). Accepts a file path or raw YAML content and reports blocking errors (e.g. invalid `represented_as`, inheritance loops, mismatched list lengths that silently drop data) and warnings (typos in field names, deprecated fields, missing `input_label`).
 
 ## API Endpoints
 
@@ -144,6 +145,7 @@ The web server provides REST API endpoints for traditional HTTP clients:
 - `POST /decision-guidance` - Decision guidance
 - `POST /project/check` - Validate whether a BioCypher project already exists at a path
 - `GET /project/cookiecutter-instructions` - Retrieve scripted cookiecutter guidance
+- `POST /schema/validate` - Validate `schema_config.yaml` YAML content against the BioCypher schema rules (accepts raw `schema_config_content` only; file-path validation is available via the MCP/stdio tool, not over HTTP)
 - `GET /health` - Health check
 - `GET /docs` - Interactive API documentation
 

@@ -17,6 +17,7 @@ from biocypher_mcp.main import (
     get_decision_guidance,
     check_project_exists,
     get_cookiecutter_instructions,
+    validate_schema_config,
     mcp
 )
 
@@ -473,7 +474,167 @@ class TestProjectCreation:
         """Test that installation methods are provided."""
         result = get_cookiecutter_instructions()
         methods = result["installation"]["methods"]
-        
+
         method_names = [m["method"] for m in methods]
         assert "pip" in method_names
         assert "cookiecutter" in methods[0]["command"]
+
+
+VALID_SCHEMA = """
+protein:
+  represented_as: node
+  input_label: protein
+  properties:
+    name: str
+
+gene to disease association:
+  represented_as: edge
+  input_label: gene_disease
+"""
+
+
+class TestValidateSchemaConfig:
+    """Test the schema_config.yaml validation tool."""
+
+    def test_result_structure(self):
+        result = validate_schema_config(schema_config_content=VALID_SCHEMA)
+        for field in ("valid", "errors", "warnings", "entities_checked", "reference"):
+            assert field in result
+        assert "biocypher" in result["reference"]
+
+    def test_valid_schema_passes(self):
+        result = validate_schema_config(schema_config_content=VALID_SCHEMA)
+        assert result["valid"] is True
+        assert result["errors"] == []
+        assert result["entities_checked"] == 2
+
+    def test_requires_exactly_one_source(self):
+        # Neither provided.
+        result = validate_schema_config()
+        assert result["valid"] is False
+        assert any("exactly one" in e for e in result["errors"])
+        # Both provided.
+        result = validate_schema_config(
+            schema_config_path="x.yaml", schema_config_content="a: b"
+        )
+        assert result["valid"] is False
+
+    def test_missing_file(self):
+        result = validate_schema_config(schema_config_path="/no/such/file.yaml")
+        assert result["valid"] is False
+        assert any("not found" in e.lower() for e in result["errors"])
+
+    def test_validate_from_path(self, tmp_path):
+        f = tmp_path / "schema_config.yaml"
+        f.write_text(VALID_SCHEMA)
+        result = validate_schema_config(schema_config_path=str(f))
+        assert result["valid"] is True
+
+    def test_invalid_yaml(self):
+        result = validate_schema_config(schema_config_content="foo: [unclosed")
+        assert result["valid"] is False
+        assert any("Invalid YAML" in e for e in result["errors"])
+
+    def test_top_level_not_mapping(self):
+        result = validate_schema_config(schema_config_content="- just\n- a\n- list")
+        assert result["valid"] is False
+        assert any("mapping" in e for e in result["errors"])
+
+    def test_empty_schema(self):
+        result = validate_schema_config(schema_config_content="")
+        assert result["valid"] is False
+
+    def test_bad_represented_as(self):
+        content = "protein:\n  represented_as: vertex\n  input_label: protein\n"
+        result = validate_schema_config(schema_config_content=content)
+        assert result["valid"] is False
+        assert any("represented_as" in e for e in result["errors"])
+
+    def test_missing_represented_as_warns(self):
+        content = "protein:\n  input_label: protein\n"
+        result = validate_schema_config(schema_config_content=content)
+        # Missing represented_as is a warning, not a hard error.
+        assert result["valid"] is True
+        assert any("represented_as" in w for w in result["warnings"])
+
+    def test_unknown_field_warns(self):
+        content = (
+            "protein:\n  represented_as: node\n  input_label: protein\n"
+            "  represanted_as: node\n"
+        )
+        result = validate_schema_config(schema_config_content=content)
+        assert any("unknown field" in w for w in result["warnings"])
+
+    def test_is_a_self_loop_errors(self):
+        content = "protein:\n  represented_as: node\n  input_label: protein\n  is_a: protein\n"
+        result = validate_schema_config(schema_config_content=content)
+        assert result["valid"] is False
+        assert any("loop" in e.lower() for e in result["errors"])
+
+    def test_mismatched_list_lengths_errors(self):
+        content = (
+            "pathway:\n  represented_as: node\n"
+            "  preferred_id: [reactome, wikipathways]\n"
+            "  input_label: [reactome]\n"
+        )
+        result = validate_schema_config(schema_config_content=content)
+        assert result["valid"] is False
+        assert any("mismatched lengths" in e for e in result["errors"])
+
+    def test_missing_input_label_warns(self):
+        content = "protein:\n  represented_as: node\n"
+        result = validate_schema_config(schema_config_content=content)
+        assert any("input_label" in w for w in result["warnings"])
+
+    def test_deprecated_preferred_id_warns(self):
+        content = (
+            "protein:\n  represented_as: node\n  input_label: protein\n"
+            "  preferred_id: uniprot\n"
+        )
+        result = validate_schema_config(schema_config_content=content)
+        assert result["valid"] is True
+        assert any("deprecated" in w and "preferred_id" in w for w in result["warnings"])
+
+    def test_oversized_content_rejected(self):
+        big = "a:\n  represented_as: node\n  input_label: a\n" + ("#x" * (11 * 1024 * 1024))
+        result = validate_schema_config(schema_config_content=big)
+        assert result["valid"] is False
+        assert any("too large" in e for e in result["errors"])
+
+    def test_oversized_file_rejected(self, tmp_path):
+        f = tmp_path / "schema_config.yaml"
+        f.write_text("#" * (11 * 1024 * 1024))
+        result = validate_schema_config(schema_config_path=str(f))
+        assert result["valid"] is False
+        assert any("too large" in e for e in result["errors"])
+
+    def test_non_utf8_file_rejected(self, tmp_path):
+        f = tmp_path / "schema_config.yaml"
+        f.write_bytes(b"\xff\xfe\x00bad")
+        result = validate_schema_config(schema_config_path=str(f))
+        assert result["valid"] is False
+        assert any("UTF-8" in e for e in result["errors"])
+
+    def test_directory_path_rejected(self, tmp_path):
+        result = validate_schema_config(schema_config_path=str(tmp_path))
+        assert result["valid"] is False
+        assert any("not found" in e.lower() for e in result["errors"])
+
+    def test_deeply_nested_yaml_handled(self):
+        # Deep nesting can exceed the recursion limit; must return a clean error,
+        # not raise. Build a deeply nested flow sequence.
+        depth = 5000
+        content = "x:\n  represented_as: node\n  input_label: x\n  note: " + "[" * depth + "]" * depth
+        result = validate_schema_config(schema_config_content=content)
+        # Either parses fine or reports a clean error; never raises.
+        assert isinstance(result, dict)
+        assert "valid" in result
+
+    def test_properties_must_be_mapping(self):
+        content = (
+            "protein:\n  represented_as: node\n  input_label: protein\n"
+            "  properties:\n    - name\n    - score\n"
+        )
+        result = validate_schema_config(schema_config_content=content)
+        assert result["valid"] is False
+        assert any("properties" in e for e in result["errors"])
