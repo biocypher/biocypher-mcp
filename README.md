@@ -189,6 +189,15 @@ uv sync --dev
 uv run pytest tests/ -v
 ```
 
+### Linting
+
+Linting and formatting run through [pre-commit](https://pre-commit.com), which pins its own ruff version:
+
+```bash
+pre-commit install
+pre-commit run --all-files
+```
+
 ### Architecture
 
 The project provides two server implementations:

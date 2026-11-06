@@ -5,7 +5,7 @@ This module provides a FastAPI server that exposes the BioCypher MCP tools
 as REST API endpoints, making them accessible via HTTP at the /mcp directory.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -26,6 +26,7 @@ from .main import (
 # Pydantic models for request/response validation
 class DataCharacteristics(BaseModel):
     """Model for data characteristics used in decision guidance."""
+
     structure_type: Optional[str] = None
     has_multiple_resources: Optional[bool] = None
     has_hierarchy: Optional[bool] = None
@@ -37,12 +38,14 @@ class DataCharacteristics(BaseModel):
 
 class ErrorResponse(BaseModel):
     """Model for error responses."""
+
     error: str
     detail: Optional[str] = None
 
 
 class ProjectPathRequest(BaseModel):
     """Model for project path check requests."""
+
     project_path: str = "."
 
 
@@ -54,6 +57,7 @@ class SchemaConfigRequest(BaseModel):
     paths, and allowing one would let clients read arbitrary server files.
     Use the MCP/stdio tool's `schema_config_path` for local file validation.
     """
+
     schema_config_content: str
 
 
@@ -64,7 +68,7 @@ app = FastAPI(
     version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
-    openapi_url="/openapi.json"
+    openapi_url="/openapi.json",
 )
 
 # Add CORS middleware
@@ -94,8 +98,8 @@ async def root():
             "check_project": "/project/check",
             "cookiecutter_instructions": "/project/cookiecutter-instructions",
             "validate_schema": "/schema/validate",
-            "docs": "/docs"
-        }
+            "docs": "/docs",
+        },
     }
 
 
@@ -105,7 +109,9 @@ async def get_workflows():
     try:
         return get_available_workflows()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving workflows: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving workflows: {str(e)}"
+        )
 
 
 @app.get("/workflows/adapter-creation", response_model=Dict[str, Any])
@@ -114,7 +120,9 @@ async def get_adapter_workflow():
     try:
         return get_adapter_creation_workflow()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving workflow: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving workflow: {str(e)}"
+        )
 
 
 @app.get("/phases/{phase_number}", response_model=Dict[str, Any])
@@ -128,7 +136,9 @@ async def get_phase(phase_number: int):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving phase guidance: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving phase guidance: {str(e)}"
+        )
 
 
 @app.get("/patterns", response_model=Dict[str, Any])
@@ -137,7 +147,9 @@ async def get_patterns():
     try:
         return get_implementation_patterns()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving patterns: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving patterns: {str(e)}"
+        )
 
 
 @app.get("/patterns/{pattern_type}", response_model=Dict[str, Any])
@@ -151,7 +163,9 @@ async def get_specific_pattern(pattern_type: str):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving pattern: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving pattern: {str(e)}"
+        )
 
 
 @app.post("/decision-guidance", response_model=Dict[str, Any])
@@ -159,10 +173,14 @@ async def get_decision(data_characteristics: DataCharacteristics):
     """Get decision guidance based on data characteristics."""
     try:
         # Convert Pydantic model to dict, excluding None values
-        data_dict = {k: v for k, v in data_characteristics.model_dump().items() if v is not None}
+        data_dict = {
+            k: v for k, v in data_characteristics.model_dump().items() if v is not None
+        }
         return get_decision_guidance(data_dict)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating decision guidance: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error generating decision guidance: {str(e)}"
+        )
 
 
 @app.post("/project/check", response_model=Dict[str, Any])
@@ -180,7 +198,9 @@ async def get_cookiecutter_info():
     try:
         return get_cookiecutter_instructions()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error retrieving instructions: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving instructions: {str(e)}"
+        )
 
 
 @app.post("/schema/validate", response_model=Dict[str, Any])
@@ -191,7 +211,9 @@ async def validate_schema(request: SchemaConfigRequest):
             schema_config_content=request.schema_config_content,
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error validating schema config: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error validating schema config: {str(e)}"
+        )
 
 
 @app.get("/health", response_model=Dict[str, str])
@@ -207,7 +229,7 @@ def run_server(host: str = "0.0.0.0", port: int = 8000, reload: bool = False):
         host=host,
         port=port,
         reload=reload,
-        log_level="info"
+        log_level="info",
     )
 
 

@@ -11,6 +11,9 @@ from fastmcp import FastMCP
 # the example biocypher/_config/test_schema_config.yaml). The rules below mirror
 # how BioCypher's mapping module parses and validates a schema_config.yaml.
 
+# The cookiecutter template all project scaffolding is based on.
+TEMPLATE_URL = "https://github.com/biocypher/biocypher-cookiecutter-template"
+
 # Fields BioCypher recognises in a schema config entry.
 _KNOWN_SCHEMA_FIELDS = {
     "represented_as",
@@ -32,7 +35,7 @@ _KNOWN_SCHEMA_FIELDS = {
 def get_available_workflows() -> dict[str, Any]:
     """
     Main entry point tool that provides information about available BioCypher workflows.
-    
+
     Returns:
         Dict containing available workflows and their descriptions
     """
@@ -42,7 +45,7 @@ def get_available_workflows() -> dict[str, Any]:
                 "id": "project_creation",
                 "name": "BioCypher Project Creation",
                 "description": "Check if a BioCypher project exists and get instructions for creating one using cookiecutter.",
-                "tools": ["check_project_exists", "get_cookiecutter_instructions"]
+                "tools": ["check_project_exists", "get_cookiecutter_instructions"],
             },
             {
                 "id": "adapter_creation",
@@ -52,33 +55,33 @@ def get_available_workflows() -> dict[str, Any]:
                 "supporting_tools": [
                     "get_phase_guidance",
                     "get_implementation_patterns",
-                    "get_decision_guidance"
-                ]
-            }
+                    "get_decision_guidance",
+                ],
+            },
         ],
         "supporting_tools": [
             {
                 "tool": "get_schema_configuration_guidance",
-                "description": "Guidance on BioCypher schema configuration"
+                "description": "Guidance on BioCypher schema configuration",
             },
             {
                 "tool": "get_resource_management_guidance",
-                "description": "Guidance on resource management and caching"
+                "description": "Guidance on resource management and caching",
             },
             {
                 "tool": "validate_schema_config",
-                "description": "Validate a schema_config.yaml against the official BioCypher schema configuration rules"
-            }
-        ]
+                "description": "Validate a schema_config.yaml against the official BioCypher schema configuration rules",
+            },
+        ],
     }
 
 
 def get_adapter_creation_workflow() -> Dict[str, Any]:
     """
     Provides detailed information about the adapter creation workflow.
-    
+
     For implementation details, code examples, and patterns, refer to the dedicated BioCypher LLM documentation.
-    
+
     Returns:
         Dict containing the workflow structure and phases
     """
@@ -93,8 +96,8 @@ def get_adapter_creation_workflow() -> Dict[str, Any]:
             "key_sections": [
                 "Adapters section - Interface, node/edge formats",
                 "Common Patterns > Adapter Patterns",
-                "Data Processing - Node/edge creation formats"
-            ]
+                "Data Processing - Node/edge creation formats",
+            ],
         },
         "phases": [
             {
@@ -103,14 +106,14 @@ def get_adapter_creation_workflow() -> Dict[str, Any]:
                 "description": "Analyze the input data structure before making implementation decisions",
                 "key_activities": [
                     "Resource Structure Analysis",
-                    "Metadata Pattern Recognition", 
-                    "Schema Assessment"
+                    "Metadata Pattern Recognition",
+                    "Schema Assessment",
                 ],
                 "outputs": [
                     "Data source type identification",
                     "Structure analysis report",
-                    "Schema requirements assessment"
-                ]
+                    "Schema requirements assessment",
+                ],
             },
             {
                 "phase": 2,
@@ -118,12 +121,12 @@ def get_adapter_creation_workflow() -> Dict[str, Any]:
                 "description": "Design the adapter architecture and extraction strategy based on data analysis",
                 "key_activities": [
                     "Adapter Architecture Decision",
-                    "Data Extraction Strategy Design"
+                    "Data Extraction Strategy Design",
                 ],
                 "outputs": [
                     "Architecture choice (Simple/Series/Hierarchical/Custom)",
-                    "Extraction strategy document"
-                ]
+                    "Extraction strategy document",
+                ],
             },
             {
                 "phase": 3,
@@ -131,12 +134,9 @@ def get_adapter_creation_workflow() -> Dict[str, Any]:
                 "description": "Implement the adapter using the designed strategy",
                 "key_activities": [
                     "Base Adapter Template Creation",
-                    "Implementation Pattern Application"
+                    "Implementation Pattern Application",
                 ],
-                "outputs": [
-                    "Working adapter code",
-                    "Field mapping configuration"
-                ]
+                "outputs": ["Working adapter code", "Field mapping configuration"],
             },
             {
                 "phase": 4,
@@ -144,12 +144,9 @@ def get_adapter_creation_workflow() -> Dict[str, Any]:
                 "description": "Test and validate the adapter implementation",
                 "key_activities": [
                     "Adaptive Testing Strategy",
-                    "Validation Framework Application"
+                    "Validation Framework Application",
                 ],
-                "outputs": [
-                    "Test suite",
-                    "Validation results"
-                ]
+                "outputs": ["Test suite", "Validation results"],
             },
             {
                 "phase": 5,
@@ -157,35 +154,35 @@ def get_adapter_creation_workflow() -> Dict[str, Any]:
                 "description": "Document the implementation and prepare for maintenance",
                 "key_activities": [
                     "Adaptive Documentation Generation",
-                    "Maintenance Planning"
+                    "Maintenance Planning",
                 ],
                 "outputs": [
                     "Implementation documentation",
                     "Usage examples",
-                    "Troubleshooting guide"
-                ]
-            }
+                    "Troubleshooting guide",
+                ],
+            },
         ],
         "decision_framework": {
             "simple_extraction": "Single resource with flat structure, consistent field names, no complex relationships",
             "series_extraction": "Multiple resources with shared structure, consistent metadata patterns, batch processing requirements",
             "hierarchical_extraction": "Nested data structures, parent-child relationships, complex metadata hierarchies",
-            "custom_extraction": "Irregular data structures, complex transformation requirements, multiple data source integration"
-        }
+            "custom_extraction": "Irregular data structures, complex transformation requirements, multiple data source integration",
+        },
     }
 
 
 def get_phase_guidance(phase_number: int) -> Dict[str, Any]:
     """
     Provides detailed guidance for a specific phase of the adapter creation workflow.
-    
+
     For implementation code examples and patterns, refer to the BioCypher LLM documentation:
     - https://biocypher.org/BioCypher/llms-adapters.txt (adapter guide)
     - https://biocypher.org/BioCypher/llms-example-adapter.txt (working example)
-    
+
     Args:
         phase_number: The phase number (1-5) to get guidance for
-        
+
     Returns:
         Dict containing detailed guidance for the specified phase
     """
@@ -200,7 +197,7 @@ def get_phase_guidance(phase_number: int) -> Dict[str, Any]:
                 "",
                 "1.2 Metadata Pattern Recognition:",
                 "   - For Single Resource: Extract all available metadata fields",
-                "   - For Series/Collection: Identify shared vs. unique metadata patterns", 
+                "   - For Series/Collection: Identify shared vs. unique metadata patterns",
                 "   - For Hierarchical Data: Map parent-child relationships",
                 "   - For Time Series: Identify temporal patterns and sequences",
                 "",
@@ -208,7 +205,7 @@ def get_phase_guidance(phase_number: int) -> Dict[str, Any]:
                 "   - Determine if existing schema is sufficient or needs creation/modification",
                 "   - If no schema exists, create one based on data analysis",
                 "   - Check if existing schema covers all data concepts",
-                "   - Extend schema if missing concepts are identified"
+                "   - Extend schema if missing concepts are identified",
             ],
             "code_examples": {
                 "resource_analysis": """
@@ -227,21 +224,21 @@ def analyze_resource_structure(data_source):
 def assess_schema_requirements(data_analysis, existing_schema=None):
     if not existing_schema:
         return create_schema_from_analysis(data_analysis)
-    
+
     # Check if existing schema covers all data concepts
     missing_concepts = identify_missing_concepts(data_analysis, existing_schema)
     if missing_concepts:
         return extend_schema(existing_schema, missing_concepts)
-    
+
     return existing_schema
-"""
+""",
             },
             "outputs_expected": [
                 "Data source type identification",
-                "Structure analysis report", 
-                "Schema requirements assessment"
+                "Structure analysis report",
+                "Schema requirements assessment",
             ],
-            "llm_documentation_reference": "For adapter interface details and data formats, see https://biocypher.org/BioCypher/llms-adapters.txt"
+            "llm_documentation_reference": "For adapter interface details and data formats, see https://biocypher.org/BioCypher/llms-adapters.txt",
         },
         2: {
             "phase_name": "Implementation Strategy Design",
@@ -258,7 +255,7 @@ def assess_schema_requirements(data_analysis, existing_schema=None):
                 "   - Determine primary extraction method",
                 "   - Identify fallback methods",
                 "   - Design error handling approach",
-                "   - Create validation rules"
+                "   - Create validation rules",
             ],
             "code_examples": {
                 "architecture_decision": """
@@ -268,7 +265,7 @@ class SimpleAdapter(BaseAdapter):
         # Direct extraction from single resource
         pass
 
-# Series Adapter (Multiple resources, shared structure)  
+# Series Adapter (Multiple resources, shared structure)
 class SeriesAdapter(BaseAdapter):
     def get_nodes(self):
         # Iterate through series with shared extraction logic
@@ -279,7 +276,7 @@ class HierarchicalAdapter(BaseAdapter):
     def get_nodes(self):
         # Extract parent and child nodes
         pass
-    
+
     def get_edges(self):
         # Create parent-child relationships
         pass
@@ -293,13 +290,13 @@ def design_extraction_strategy(data_analysis):
         'validation_rules': create_validation_rules(data_analysis)
     }
     return strategy
-"""
+""",
             },
             "outputs_expected": [
                 "Architecture choice (Simple/Series/Hierarchical/Custom)",
-                "Extraction strategy document"
+                "Extraction strategy document",
             ],
-            "llm_documentation_reference": "For adapter patterns and implementation strategies, see https://biocypher.org/BioCypher/llms.txt > Common Patterns > Adapter Patterns"
+            "llm_documentation_reference": "For adapter patterns and implementation strategies, see https://biocypher.org/BioCypher/llms.txt > Common Patterns > Adapter Patterns",
         },
         3: {
             "phase_name": "Implementation",
@@ -313,7 +310,7 @@ def design_extraction_strategy(data_analysis):
                 "3.2 Implementation Patterns:",
                 "   - Pattern 1: Field Mapping - Map data fields to schema properties",
                 "   - Pattern 2: Conditional Extraction - Extract data using conditional rules",
-                "   - Pattern 3: Progressive Fallback - Try multiple extraction methods"
+                "   - Pattern 3: Progressive Fallback - Try multiple extraction methods",
             ],
             "code_examples": {
                 "base_template": """
@@ -323,19 +320,19 @@ class AdaptiveAdapter(BaseAdapter):
         self.schema_config = schema_config
         self.data_analysis = self.analyze_data_source()
         self.extraction_strategy = self.design_strategy()
-    
+
     def analyze_data_source(self):
         # Implement based on data source type
         pass
-    
+
     def design_strategy(self):
         # Implement based on analysis results
         pass
-    
+
     def get_nodes(self):
         # Implement using designed strategy
         pass
-    
+
     def get_edges(self):
         # Implement if relationships are present
         pass
@@ -350,13 +347,10 @@ def map_fields_to_schema(self, data_item, field_mapping):
                 attributes[schema_prop] = value
                 break
     return attributes
-"""
+""",
             },
-            "outputs_expected": [
-                "Working adapter code",
-                "Field mapping configuration"
-            ],
-            "llm_documentation_reference": "For implementation details, node/edge formats, and working examples, see https://biocypher.org/BioCypher/llms-example-adapter.txt and https://biocypher.org/BioCypher/llms-adapters.txt"
+            "outputs_expected": ["Working adapter code", "Field mapping configuration"],
+            "llm_documentation_reference": "For implementation details, node/edge formats, and working examples, see https://biocypher.org/BioCypher/llms-example-adapter.txt and https://biocypher.org/BioCypher/llms-adapters.txt",
         },
         4: {
             "phase_name": "Quality Assurance",
@@ -369,23 +363,23 @@ def map_fields_to_schema(self, data_item, field_mapping):
                 "4.2 Validation Framework:",
                 "   - Create adaptive validation framework",
                 "   - Implement validation rules based on data characteristics",
-                "   - Apply validation to adapter output"
+                "   - Apply validation to adapter output",
             ],
             "code_examples": {
                 "testing_strategy": """
 def create_adaptive_test_suite(adapter, data_characteristics):
     tests = []
-    
+
     # Schema compliance tests
     tests.extend(create_schema_tests(adapter))
-    
+
     # Data quality tests based on characteristics
     if data_characteristics['has_relationships']:
         tests.extend(create_relationship_tests(adapter))
-    
+
     if data_characteristics['has_temporal_data']:
         tests.extend(create_temporal_tests(adapter))
-    
+
     return tests
 """,
                 "validation_framework": """
@@ -393,21 +387,18 @@ class AdaptiveValidator:
     def __init__(self, data_characteristics):
         self.characteristics = data_characteristics
         self.validation_rules = self.create_validation_rules()
-    
+
     def create_validation_rules(self):
         rules = []
         rules.append(SchemaComplianceRule())
-        
+
         if self.characteristics['has_relationships']:
             rules.append(RelationshipIntegrityRule())
-        
+
         return rules
-"""
+""",
             },
-            "outputs_expected": [
-                "Test suite",
-                "Validation results"
-            ]
+            "outputs_expected": ["Test suite", "Validation results"],
         },
         5: {
             "phase_name": "Documentation and Maintenance",
@@ -420,7 +411,7 @@ class AdaptiveValidator:
                 "",
                 "5.2 Maintenance Planning:",
                 "   - Plan for future updates and modifications",
-                "   - Document decision rationale for future reference"
+                "   - Document decision rationale for future reference",
             ],
             "code_examples": {
                 "documentation_generation": """
@@ -437,33 +428,33 @@ def generate_adaptive_documentation(adapter, data_analysis):
             },
             "outputs_expected": [
                 "Implementation documentation",
-                "Usage examples", 
-                "Troubleshooting guide"
-            ]
-        }
+                "Usage examples",
+                "Troubleshooting guide",
+            ],
+        },
     }
-    
+
     if phase_number not in phase_guidance:
         return {
             "error": f"Phase {phase_number} not found. Available phases: 1-5",
-            "available_phases": list(phase_guidance.keys())
+            "available_phases": list(phase_guidance.keys()),
         }
-    
+
     return phase_guidance[phase_number]
 
 
 def get_implementation_patterns(pattern_type: Optional[str] = None) -> Dict[str, Any]:
     """
     Provides implementation patterns for different data scenarios.
-    
+
     For comprehensive adapter patterns and working examples, refer to:
     - https://biocypher.org/BioCypher/llms.txt > Common Patterns > Adapter Patterns
     - https://biocypher.org/BioCypher/llms-adapters.txt (complete adapter guide)
     - https://biocypher.org/BioCypher/llms-example-adapter.txt (working GEO adapter example)
-    
+
     Args:
         pattern_type: Optional specific pattern type to retrieve
-        
+
     Returns:
         Dict containing implementation patterns
     """
@@ -486,11 +477,11 @@ def map_fields_to_schema(self, data_item, field_mapping):
             "example_mapping": {
                 "name": ["title", "name", "label"],
                 "description": ["desc", "description", "summary"],
-                "identifier": ["id", "identifier", "uid"]
-            }
+                "identifier": ["id", "identifier", "uid"],
+            },
         },
         "conditional_extraction": {
-            "name": "Conditional Extraction Pattern", 
+            "name": "Conditional Extraction Pattern",
             "description": "Extract data using conditional rules based on data structure",
             "use_case": "When data structure varies or has optional fields",
             "code": """
@@ -503,13 +494,13 @@ def extract_with_conditions(self, data_item, extraction_rules):
             "example_rules": [
                 {
                     "condition": "has_field('metadata')",
-                    "extraction": "extract_from_metadata"
+                    "extraction": "extract_from_metadata",
                 },
                 {
-                    "condition": "has_field('properties')", 
-                    "extraction": "extract_from_properties"
-                }
-            ]
+                    "condition": "has_field('properties')",
+                    "extraction": "extract_from_properties",
+                },
+            ],
         },
         "progressive_fallback": {
             "name": "Progressive Fallback Pattern",
@@ -528,84 +519,92 @@ def extract_with_fallbacks(self, data_item, extraction_methods):
 """,
             "example_methods": [
                 "extract_primary_field",
-                "extract_secondary_field", 
+                "extract_secondary_field",
                 "extract_computed_field",
-                "extract_default_value"
-            ]
-        }
+                "extract_default_value",
+            ],
+        },
     }
-    
+
     if pattern_type:
         if pattern_type in patterns:
             return patterns[pattern_type]
         else:
             return {
                 "error": f"Pattern type '{pattern_type}' not found",
-                "available_patterns": list(patterns.keys())
+                "available_patterns": list(patterns.keys()),
             }
-    
+
     return patterns
 
 
 def get_decision_guidance(data_characteristics: Dict[str, Any]) -> Dict[str, Any]:
     """
     Provides guidance on which implementation approach to use based on data characteristics.
-    
+
     Args:
         data_characteristics: Dictionary describing the data source characteristics
-        
+
     Returns:
         Dict containing decision guidance and recommendations
     """
     recommendations = []
-    
+
     # Analyze characteristics and provide recommendations
     if data_characteristics.get("structure_type") == "flat":
-        recommendations.append({
-            "approach": "Simple Extraction",
-            "reason": "Flat structure with consistent field names",
-            "implementation": "Direct field mapping with minimal transformation"
-        })
-    
+        recommendations.append(
+            {
+                "approach": "Simple Extraction",
+                "reason": "Flat structure with consistent field names",
+                "implementation": "Direct field mapping with minimal transformation",
+            }
+        )
+
     if data_characteristics.get("has_multiple_resources", False):
-        recommendations.append({
-            "approach": "Series Extraction", 
-            "reason": "Multiple resources with shared structure",
-            "implementation": "Iterate through resources with shared extraction logic"
-        })
-    
+        recommendations.append(
+            {
+                "approach": "Series Extraction",
+                "reason": "Multiple resources with shared structure",
+                "implementation": "Iterate through resources with shared extraction logic",
+            }
+        )
+
     if data_characteristics.get("has_hierarchy", False):
-        recommendations.append({
-            "approach": "Hierarchical Extraction",
-            "reason": "Nested data structures with parent-child relationships", 
-            "implementation": "Extract parent and child nodes, create relationship edges"
-        })
-    
+        recommendations.append(
+            {
+                "approach": "Hierarchical Extraction",
+                "reason": "Nested data structures with parent-child relationships",
+                "implementation": "Extract parent and child nodes, create relationship edges",
+            }
+        )
+
     if data_characteristics.get("has_irregular_structure", False):
-        recommendations.append({
-            "approach": "Custom Extraction",
-            "reason": "Irregular data structures requiring complex transformation",
-            "implementation": "Implement custom extraction logic with multiple fallback strategies"
-        })
-    
+        recommendations.append(
+            {
+                "approach": "Custom Extraction",
+                "reason": "Irregular data structures requiring complex transformation",
+                "implementation": "Implement custom extraction logic with multiple fallback strategies",
+            }
+        )
+
     return {
         "data_characteristics": data_characteristics,
         "recommendations": recommendations,
         "decision_framework": {
             "simple_extraction": "Single resource with flat structure, consistent field names, no complex relationships",
-            "series_extraction": "Multiple resources with shared structure, consistent metadata patterns, batch processing requirements", 
+            "series_extraction": "Multiple resources with shared structure, consistent metadata patterns, batch processing requirements",
             "hierarchical_extraction": "Nested data structures, parent-child relationships, complex metadata hierarchies",
-            "custom_extraction": "Irregular data structures, complex transformation requirements, multiple data source integration"
-        }
+            "custom_extraction": "Irregular data structures, complex transformation requirements, multiple data source integration",
+        },
     }
 
 
 def get_schema_configuration_guidance() -> Dict[str, Any]:
     """
     Provides guidance on BioCypher schema configuration.
-    
+
     For comprehensive details, refer to the dedicated BioCypher LLM documentation.
-    
+
     Returns:
         Dict containing schema configuration overview and references to detailed documentation
     """
@@ -614,7 +613,7 @@ def get_schema_configuration_guidance() -> Dict[str, Any]:
             "name": "BioCypher Schema Configuration",
             "description": "Schema configuration defines how data sources map to BioCypher's ontological structure using YAML",
             "file_location": "config/schema_config.yaml",
-            "key_concept": "Uses input_label to map adapter outputs to schema concepts"
+            "key_concept": "Uses input_label to map adapter outputs to schema concepts",
         },
         "llm_documentation": {
             "primary_reference": "https://biocypher.org/BioCypher/llms.txt",
@@ -623,8 +622,8 @@ def get_schema_configuration_guidance() -> Dict[str, Any]:
                 "YAML-based schema definition",
                 "Defines node types, edge types, and their properties",
                 "Uses input_label to map adapter outputs to schema concepts",
-                "Supports inheritance and property overrides"
-            ]
+                "Supports inheritance and property overrides",
+            ],
         },
         "quick_reference": {
             "file_format": "YAML",
@@ -632,23 +631,23 @@ def get_schema_configuration_guidance() -> Dict[str, Any]:
             "core_fields": [
                 "represented_as: node or edge",
                 "preferred_id: identifier source",
-                "input_label: data source field name (must match adapter output)"
+                "input_label: data source field name (must match adapter output)",
             ],
             "additional_resources": [
                 "https://biocypher.org/BioCypher/learn/tutorials/tutorial002_handling_ontologies/",
-                "https://biocypher.org/BioCypher/llms-adapters.txt (for adapter examples)"
-            ]
+                "https://biocypher.org/BioCypher/llms-adapters.txt (for adapter examples)",
+            ],
         },
-        "note": "For detailed schema configuration examples and patterns, refer to the BioCypher LLM documentation at https://biocypher.org/BioCypher/llms.txt"
+        "note": "For detailed schema configuration examples and patterns, refer to the BioCypher LLM documentation at https://biocypher.org/BioCypher/llms.txt",
     }
 
 
 def get_resource_management_guidance() -> Dict[str, Any]:
     """
     Provides guidance on BioCypher resource management and download/cache functionality.
-    
+
     For comprehensive details, refer to the dedicated BioCypher LLM documentation.
-    
+
     Returns:
         Dict containing resource management overview and references to detailed documentation
     """
@@ -656,7 +655,7 @@ def get_resource_management_guidance() -> Dict[str, Any]:
         "overview": {
             "name": "BioCypher Resource Management",
             "description": "Resource management handles downloading, caching, and managing data sources for BioCypher projects",
-            "pipeline_position": "Beginning of project - data source acquisition"
+            "pipeline_position": "Beginning of project - data source acquisition",
         },
         "llm_documentation": {
             "primary_reference": "https://biocypher.org/BioCypher/llms.txt",
@@ -664,37 +663,37 @@ def get_resource_management_guidance() -> Dict[str, Any]:
             "available_functions": [
                 "download_and_cache_file(): Download files with caching",
                 "download_and_cache_ftp(): FTP file downloads",
-                "download_and_cache_http(): HTTP file downloads"
-            ]
+                "download_and_cache_http(): HTTP file downloads",
+            ],
         },
         "quick_reference": {
             "resource_types": {
                 "FileDownload": "Downloads files from URLs (static data files, databases, ontologies)",
-                "APIRequest": "Makes API requests and caches responses (REST APIs, web services)"
+                "APIRequest": "Makes API requests and caches responses (REST APIs, web services)",
             },
             "basic_usage": "Initialize Resource with name, URL(s), and lifetime. Use Downloader for managing downloads and caching.",
             "additional_resources": [
                 "https://biocypher.org/BioCypher/reference/source/download-cache/",
-                "https://biocypher.org/BioCypher/llms-adapters.txt (for adapter examples using resources)"
-            ]
+                "https://biocypher.org/BioCypher/llms-adapters.txt (for adapter examples using resources)",
+            ],
         },
-        "note": "For detailed resource management examples, code patterns, and API reference, refer to the BioCypher LLM documentation at https://biocypher.org/BioCypher/llms.txt"
+        "note": "For detailed resource management examples, code patterns, and API reference, refer to the BioCypher LLM documentation at https://biocypher.org/BioCypher/llms.txt",
     }
 
 
 def check_project_exists(project_path: str = ".") -> Dict[str, Any]:
     """
     Returns the expected BioCypher project structure and instructions for project creation.
-    
+
     This function provides the expected structure that should be created by the cookiecutter template.
     You should check the files and directories yourself to determine if a project already exists.
-    
+
     IMPORTANT: If you determine that the project does NOT exist, you MUST use cookiecutter to create it.
     Do NOT manually create the project structure. Always use the cookiecutter template.
-    
+
     Args:
         project_path: Path to check for an existing project (default: current directory)
-        
+
     Returns:
         Dict containing:
         - project_path: The path that was checked
@@ -703,9 +702,9 @@ def check_project_exists(project_path: str = ".") -> Dict[str, Any]:
         - cookiecutter_template_url: URL of the cookiecutter template
     """
     from pathlib import Path
-    
+
     path = Path(project_path).resolve()
-    
+
     # Expected structure from cookiecutter template
     expected_structure = {
         "root": "my-biocypher-pipeline/",
@@ -713,7 +712,7 @@ def check_project_exists(project_path: str = ".") -> Dict[str, Any]:
             "config/",
             "src/my_biocypher_pipeline/",
             "src/my_biocypher_pipeline/adapters/",
-            "tests/"
+            "tests/",
         ],
         "files": [
             "config/biocypher_config.yaml",
@@ -728,94 +727,95 @@ def check_project_exists(project_path: str = ".") -> Dict[str, Any]:
             "Dockerfile",
             "pyproject.toml",
             "README.md",
-            ".gitignore"
-        ]
+            ".gitignore",
+        ],
     }
-    
+
     instruction_if_not_exists = (
         "If the project does NOT exist at this location, you MUST use cookiecutter to create it. "
         "Do NOT manually create files or directories. "
         "Call get_cookiecutter_instructions() to get the exact commands needed, "
-        "then run cookiecutter with the template URL: https://github.com/biocypher/biocypher-cookiecutter-template.git"
+        f"then run cookiecutter with the template URL: {TEMPLATE_URL}"
     )
-    
+
     return {
         "project_path": str(path),
         "expected_structure": expected_structure,
         "instruction_if_not_exists": instruction_if_not_exists,
-        "cookiecutter_template_url": "https://github.com/biocypher/biocypher-cookiecutter-template"
+        "cookiecutter_template_url": TEMPLATE_URL,
     }
 
 
 def get_cookiecutter_instructions() -> Dict[str, Any]:
     """
     Provides instructions on how to create a BioCypher project using cookiecutter.
-    
+
     This function informs users how to install cookiecutter (if not present) and
-    how to run it to create a new BioCypher project. It does not make assumptions
-    about directory structure or project name - the LLM should check with the user
-    for these details.
-    
+    how to run it to create a new BioCypher project. Cookiecutter always runs
+    non-interactively: the project name is inferred from the user's request, and
+    the user is only asked for it if it cannot be inferred.
+
     Returns:
         Dict containing installation and usage instructions for cookiecutter
     """
     return {
-        "template_url": "https://github.com/biocypher/biocypher-cookiecutter-template",
+        "template_url": TEMPLATE_URL,
+        "prerequisites": {
+            "python": (
+                "Generated projects require Python >= 3.13 (requires-python in their "
+                "pyproject.toml). Make sure it is available before installing dependencies."
+            )
+        },
         "installation": {
             "description": "Install cookiecutter if not already installed",
             "methods": [
-                {
-                    "method": "pip",
-                    "command": "pip install cookiecutter"
-                },
+                {"method": "pip", "command": "pip install cookiecutter"},
                 {
                     "method": "conda",
-                    "command": "conda install -c conda-forge cookiecutter"
+                    "command": "conda install -c conda-forge cookiecutter",
                 },
-                {
-                    "method": "uv",
-                    "command": "uv pip install cookiecutter"
-                }
-            ]
+                {"method": "uv", "command": "uv pip install cookiecutter"},
+            ],
         },
         "usage": {
             "description": "Run cookiecutter to create a new BioCypher project (always non-interactive; pre-fill everything you can)",
             "non_interactive_mode": {
                 "description": (
-                    "Determine sensible defaults for every cookiecutter prompt first. "
-                    "Only ask the user for values that cannot be inferred or that they explicitly want to control. "
-                    "After confirming any custom values, run cookiecutter with --no-input and pass key=value pairs "
-                    "for every prompt so no terminal interaction is required."
+                    "Use any values the user provided and the defaults below for everything else. "
+                    "Ask the user only if project_name cannot be inferred from their request; "
+                    "do not ask for confirmation of any other value. "
+                    "Run cookiecutter with --no-input and pass key=value pairs for every field "
+                    "so no terminal interaction is required."
                 ),
                 "default_context_strategy": [
                     {
                         "field": "project_name",
-                        "default": "Ask the user for their desired project/directory name (required)."
+                        "default": "Infer from the user's request (e.g. the data source name). Ask the user only if it cannot be inferred.",
                     },
                     {
                         "field": "package_name",
-                        "default": "project_name converted to snake_case."
+                        "default": "project_name converted to snake_case.",
                     },
-                    {
-                        "field": "adapter_name",
-                        "default": "package_name + '_adapter'."
-                    },
+                    {"field": "adapter_name", "default": "package_name + '_adapter'."},
                     {
                         "field": "project_description",
-                        "default": "Brief sentence like 'BioCypher project for <data source>' if known."
+                        "default": "Brief sentence like 'BioCypher project for <data source>' if known.",
                     },
                     {
                         "field": "data_source_type",
-                        "default": "\"file\" unless the user indicates api/database/custom."
+                        "default": (
+                            '"file" unless the user indicates api/database/custom. '
+                            "This is a label only: it changes text in the generated project, not the adapter."
+                        ),
                     },
                     {
-                        "field": "include_docker / include_tests / schema_config",
-                        "default": "\"y\" unless the user requests otherwise."
+                        "field": "include_docker / include_tests",
+                        "default": '"y" unless the user requests otherwise.',
                     },
                     {
                         "field": "author_name / author_email / version",
-                        "default": "\"BioCypher User\", \"user@example.com\", \"0.1.0\" (override if the user provides real info)."
-                    }
+                        "default": '"BioCypher User", "user@example.com", "0.1.0" (override if the user provides real info).',
+                    },
                 ],
                 "required_context": [
                     "project_name",
@@ -823,34 +823,30 @@ def get_cookiecutter_instructions() -> Dict[str, Any]:
                     "package_name",
                     "adapter_name",
                     "data_source_type",
-                    "include_docker (\"y\" or \"n\")",
-                    "include_tests (\"y\" or \"n\")",
-                    "schema_config (\"y\" or \"n\")",
+                    'include_docker ("y" or "n")',
+                    'include_tests ("y" or "n")',
                     "author_name",
                     "author_email",
-                    "version"
+                    "version",
                 ],
                 "command_template": (
-                    "cookiecutter https://github.com/biocypher/biocypher-cookiecutter-template.git "
+                    f"cookiecutter {TEMPLATE_URL} "
                     "--no-input "
-                    "project_name=\"{project_name}\" "
-                    "project_description=\"{project_description}\" "
-                    "package_name=\"{package_name}\" "
-                    "adapter_name=\"{adapter_name}\" "
-                    "data_source_type=\"{data_source_type}\" "
-                    "include_docker=\"{include_docker}\" "
-                    "include_tests=\"{include_tests}\" "
-                    "schema_config=\"{schema_config}\" "
-                    "author_name=\"{author_name}\" "
-                    "author_email=\"{author_email}\" "
-                    "version=\"{version}\""
+                    'project_name="{project_name}" '
+                    'project_description="{project_description}" '
+                    'package_name="{package_name}" '
+                    'adapter_name="{adapter_name}" '
+                    'data_source_type="{data_source_type}" '
+                    'include_docker="{include_docker}" '
+                    'include_tests="{include_tests}" '
+                    'author_name="{author_name}" '
+                    'author_email="{author_email}" '
+                    'version="{version}"'
                 ),
                 "notes": [
-                    "Pre-fill defaults and only ask the user for fields that cannot be inferred or that they want to customize.",
-                    "Confirm the final context before running the command.",
                     "Never run interactive cookiecutter prompts; always provide the complete context yourself."
-                ]
-            }
+                ],
+            },
         },
         "expected_output": {
             "description": "After running cookiecutter, you should have a project directory with the structure shown by check_project_exists()",
@@ -858,14 +854,14 @@ def get_cookiecutter_instructions() -> Dict[str, Any]:
                 "Navigate to the created project directory",
                 "Install dependencies (e.g., 'uv sync' or 'poetry install')",
                 "Review and customize the generated files",
-                "Implement your adapter in src/<project_name>/adapters/"
-            ]
+                "Implement your adapter in src/<package_name>/adapters/<adapter_name>.py",
+            ],
         },
         "important_notes": [
-            "Ask the user for the desired project name and location before running cookiecutter",
-            "The cookiecutter template will prompt for various configuration options",
-            "More information can be found in the cookiecutter README at the template URL"
-        ]
+            "Create the project in the current working directory unless the user names another location",
+            "The generated adapter yields dummy data for every data_source_type; implement it for your data source",
+            "More information can be found in the cookiecutter README at the template URL",
+        ],
     }
 
 
@@ -911,8 +907,7 @@ def _validate_schema_entry(name: str, entry: Any) -> Dict[str, List[str]]:
         for rep in _to_list(entry["represented_as"]):
             if rep not in ("node", "edge"):
                 errors.append(
-                    f"'{name}': 'represented_as' must be 'node' or 'edge', "
-                    f"got '{rep}'."
+                    f"'{name}': 'represented_as' must be 'node' or 'edge', got '{rep}'."
                 )
 
     # preferred_id / namespace deprecation handling.
@@ -922,9 +917,7 @@ def _validate_schema_entry(name: str, entry: Any) -> Dict[str, List[str]]:
             "'namespace' and ignores 'preferred_id'."
         )
     elif entry.get("preferred_id") is not None:
-        warnings.append(
-            f"'{name}': 'preferred_id' is deprecated; prefer 'namespace'."
-        )
+        warnings.append(f"'{name}': 'preferred_id' is deprecated; prefer 'namespace'.")
 
     # input_label / label_in_input.
     if entry.get("input_label") is None and entry.get("label_in_input") is None:
@@ -1123,36 +1116,31 @@ mcp.tool(validate_schema_config)
 # Expose this as the root app; serve it with uvicorn/gunicorn.
 app = mcp.http_app(path="/")
 
+
 def main():
     """Run the MCP server.
-    
+
     By default, runs in stdio mode for development.
     For production HTTP mode, use: python -m biocypher_mcp.main --transport http
     """
-    import sys
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="Run the BioCypher MCP server")
     parser.add_argument(
-        "--transport", 
-        choices=["stdio", "http"], 
+        "--transport",
+        choices=["stdio", "http"],
         default="stdio",
-        help="Transport method (default: stdio)"
+        help="Transport method (default: stdio)",
     )
     parser.add_argument(
-        "--port", 
-        type=int, 
-        default=8000,
-        help="Port for HTTP transport (default: 8000)"
+        "--port", type=int, default=8000, help="Port for HTTP transport (default: 8000)"
     )
     parser.add_argument(
-        "--host", 
-        default="0.0.0.0",
-        help="Host for HTTP transport (default: 0.0.0.0)"
+        "--host", default="0.0.0.0", help="Host for HTTP transport (default: 0.0.0.0)"
     )
-    
+
     args = parser.parse_args()
-    
+
     if args.transport == "http":
         print(f"Starting BioCypher MCP server in HTTP mode on {args.host}:{args.port}")
         mcp.run(transport="http", port=args.port, host=args.host)
