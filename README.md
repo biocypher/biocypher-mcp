@@ -10,7 +10,7 @@ An MCP (Model Context Protocol) server for assisting with BioCypher workflows. T
 - **Streamable HTTP Transport**: Full MCP protocol support with Server-Sent Events (SSE)
 - **Hierarchical Tool Structure**: Navigate through BioCypher workflows with structured guidance
 - **BioCypher Adapter Creation Workflow**: Complete 5-phase framework for creating adapters from any data source
-- **Project Creation Guidance**: Verify existing directories and get scripted cookiecutter instructions
+- **Project Creation Guidance**: Get the expected project layout and scripted cookiecutter instructions
 - **Adaptive Implementation Process**: Step-by-step guidance for analyzing data sources and implementing appropriate adapter strategies
 - **Implementation Patterns**: Reusable patterns for field mapping, conditional extraction, and progressive fallback
 - **Decision Guidance**: AI-powered recommendations based on data characteristics
@@ -115,8 +115,9 @@ The MCP server provides the following tools:
 - **`get_decision_guidance`** - Get AI-powered recommendations based on data characteristics
 
 ### Project Creation Tools
-- **`check_project_exists`** - Show the expected cookiecutter layout and instructions for handling missing projects
+- **`get_expected_project_structure`** - Show the layout the cookiecutter template generates for your project names and options. It cannot see your file system, so compare the layout with your own files
 - **`get_cookiecutter_instructions`** - Provide scripted, non-interactive cookiecutter commands and defaults
+- **`check_project_exists`** - Deprecated alias for `get_expected_project_structure`, which will be removed
 
 ### Configuration Tools
 - **`get_schema_configuration_guidance`** - Get guidance on BioCypher schema configuration
@@ -154,10 +155,10 @@ The web server provides REST API endpoints for traditional HTTP clients:
 ### Preparing a BioCypher Project
 
 ```python
-from biocypher_mcp.main import check_project_exists, get_cookiecutter_instructions
+from biocypher_mcp.main import get_cookiecutter_instructions, get_expected_project_structure
 
-# Inspect the expected cookiecutter layout for your target directory
-structure = check_project_exists("/path/to/project")
+# Inspect the layout the template generates for your project
+structure = get_expected_project_structure("my-project")
 print(structure["expected_structure"])
 print(structure["instruction_if_not_exists"])
 
@@ -187,6 +188,18 @@ uv sync --dev
 
 # Run tests
 uv run pytest tests/ -v
+
+# Check the expected project layout against the pinned template (needs network access)
+uv run pytest tests/ -m network
+```
+
+### Linting
+
+Linting and formatting run through [pre-commit](https://pre-commit.com), which pins its own ruff version:
+
+```bash
+pre-commit install
+pre-commit run --all-files
 ```
 
 ### Architecture

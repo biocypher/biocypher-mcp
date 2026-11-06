@@ -40,3 +40,5 @@ packages = ["src/biocypher_mcp"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "-m 'not network'"
+markers = ["network: needs network access; run with pytest -m network"]
