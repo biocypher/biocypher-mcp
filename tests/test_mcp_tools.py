@@ -561,6 +561,11 @@ class TestProjectCreation:
         assert "exists" not in result
         assert "project_path" not in result
         assert "cannot see your file system" in result["how_to_check"]
+        assert "create_knowledge_graph.py" in result["how_to_check"]
+        assert "config/schema_config.yaml" in result["how_to_check"]
+        assert (
+            "Do not run cookiecutter over an existing project" in result["how_to_check"]
+        )
         assert result["template_version"] == TEMPLATE_COMMIT
 
     def test_get_cookiecutter_instructions_structure(self):

@@ -705,7 +705,8 @@ def get_expected_project_structure(
     Returns the layout that the cookiecutter template generates for a project.
 
     This tool cannot see your file system, so it cannot tell whether a project
-    exists. Compare the returned layout with your own files to find out.
+    exists. Check your own files as described in how_to_check. A project can differ
+    from this layout, for example after edits or with an older template version.
 
     IMPORTANT: If the project does NOT exist, you MUST use cookiecutter to create it.
     Do NOT manually create the project structure. Always use the cookiecutter template.
@@ -778,8 +779,10 @@ def get_expected_project_structure(
             "files": sorted(files),
         },
         "how_to_check": (
-            "This tool cannot see your file system. List your own files and compare "
-            "them with expected_structure to find out whether the project exists."
+            "This tool cannot see your file system, so list your own files. A project exists "
+            "if create_knowledge_graph.py and config/schema_config.yaml are present, even if "
+            "other files differ from expected_structure. Do not run cookiecutter over an "
+            "existing project."
         ),
         "instruction_if_not_exists": instruction_if_not_exists,
         "cookiecutter_template_url": TEMPLATE_URL,
