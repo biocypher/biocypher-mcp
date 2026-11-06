@@ -14,6 +14,10 @@ from fastmcp import FastMCP
 # The cookiecutter template all project scaffolding is based on.
 TEMPLATE_URL = "https://github.com/biocypher/biocypher-cookiecutter-template"
 
+# The template commit that projects are generated from. Pinned so that every run
+# gets the same scaffold; update it deliberately when the template changes.
+TEMPLATE_COMMIT = "115fce0837b0d81b96e58a5af9dca179b1174ec8"
+
 # Fields BioCypher recognises in a schema config entry.
 _KNOWN_SCHEMA_FIELDS = {
     "represented_as",
@@ -735,7 +739,7 @@ def check_project_exists(project_path: str = ".") -> Dict[str, Any]:
         "If the project does NOT exist at this location, you MUST use cookiecutter to create it. "
         "Do NOT manually create files or directories. "
         "Call get_cookiecutter_instructions() to get the exact commands needed, "
-        f"then run cookiecutter with the template URL: {TEMPLATE_URL}"
+        f"then run the exact cookiecutter command it returns (template URL: {TEMPLATE_URL})"
     )
 
     return {
@@ -760,6 +764,7 @@ def get_cookiecutter_instructions() -> Dict[str, Any]:
     """
     return {
         "template_url": TEMPLATE_URL,
+        "template_version": TEMPLATE_COMMIT,
         "prerequisites": {
             "python": (
                 "Generated projects require Python >= 3.13 (requires-python in their "
@@ -831,6 +836,7 @@ def get_cookiecutter_instructions() -> Dict[str, Any]:
                 ],
                 "command_template": (
                     f"cookiecutter {TEMPLATE_URL} "
+                    f"--checkout {TEMPLATE_COMMIT} "
                     "--no-input "
                     'project_name="{project_name}" '
                     'project_description="{project_description}" '
@@ -844,7 +850,8 @@ def get_cookiecutter_instructions() -> Dict[str, Any]:
                     'version="{version}"'
                 ),
                 "notes": [
-                    "Never run interactive cookiecutter prompts; always provide the complete context yourself."
+                    "Never run interactive cookiecutter prompts; always provide the complete context yourself.",
+                    "Keep the --checkout argument: it pins the template version these instructions were written for.",
                 ],
             },
         },

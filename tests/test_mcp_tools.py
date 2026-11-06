@@ -12,6 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from biocypher_mcp.main import (
+    TEMPLATE_COMMIT,
     TEMPLATE_URL,
     get_available_workflows,
     get_adapter_creation_workflow,
@@ -561,6 +562,15 @@ class TestProjectCreation:
         assert structure["cookiecutter_template_url"] == TEMPLATE_URL
         assert command.startswith(f"cookiecutter {TEMPLATE_URL} ")
         assert f"{TEMPLATE_URL}.git" not in json.dumps([instructions, structure])
+
+    def test_template_is_pinned(self):
+        """Test that the command checks out the template version that is reported."""
+        result = get_cookiecutter_instructions()
+        command = result["usage"]["non_interactive_mode"]["command_template"]
+
+        assert re.fullmatch(r"[0-9a-f]{40}", TEMPLATE_COMMIT)
+        assert result["template_version"] == TEMPLATE_COMMIT
+        assert f"--checkout {TEMPLATE_COMMIT} " in command
 
     def test_data_source_type_is_described_as_label(self):
         """Test that data_source_type is not presented as changing the adapter."""
