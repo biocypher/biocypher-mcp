@@ -2,6 +2,7 @@
 Tests for the BioCypher MCP tool functionality.
 """
 
+import asyncio
 import json
 import re
 
@@ -21,6 +22,7 @@ from biocypher_mcp.main import (
     get_decision_guidance,
     check_project_exists,
     get_cookiecutter_instructions,
+    get_expected_project_structure,
     validate_schema_config,
     mcp,
 )
@@ -87,7 +89,8 @@ class TestAvailableWorkflows:
         assert project_workflow["name"] == "BioCypher Project Creation"
         assert "cookiecutter" in project_workflow["description"].lower()
         assert "tools" in project_workflow
-        assert "check_project_exists" in project_workflow["tools"]
+        assert "get_expected_project_structure" in project_workflow["tools"]
+        assert "check_project_exists" not in project_workflow["tools"]
         assert "get_cookiecutter_instructions" in project_workflow["tools"]
 
     def test_supporting_tools(self):
@@ -402,6 +405,7 @@ class TestMCPToolIntegration:
             get_implementation_patterns,
             get_decision_guidance,
             check_project_exists,
+            get_expected_project_structure,
             get_cookiecutter_instructions,
         ]
 
@@ -501,6 +505,63 @@ class TestProjectCreation:
         assert "config/" in expected["directories"]
         assert "create_knowledge_graph.py" in expected["files"]
         assert "config/biocypher_config.yaml" in expected["files"]
+
+    def test_check_project_exists_is_deprecated(self):
+        """Test that the alias points to the new tool and does not resolve the path."""
+        result = check_project_exists("does/not/exist")
+
+        assert "get_expected_project_structure" in result["deprecated"]
+        assert result["project_path"] == "does/not/exist"
+        assert (
+            result["expected_structure"]
+            == get_expected_project_structure()["expected_structure"]
+        )
+
+    def test_both_project_tools_are_registered(self):
+        """Test that the alias stays available next to the new tool."""
+        tools = asyncio.run(mcp.get_tools())
+
+        assert "get_expected_project_structure" in tools
+        assert "check_project_exists" in tools
+
+    def test_expected_structure_uses_given_names(self):
+        """Test that the layout uses the names passed in, not placeholders."""
+        result = get_expected_project_structure(
+            "synthetic-ppi", "ppi_pkg", "ppi_adapter"
+        )
+        expected = result["expected_structure"]
+
+        assert expected["root"] == "synthetic-ppi/"
+        assert "src/ppi_pkg/adapters/ppi_adapter.py" in expected["files"]
+        assert "tests/test_ppi_adapter.py" in expected["files"]
+        assert "my_biocypher_pipeline" not in json.dumps(result)
+
+    def test_expected_structure_derives_names(self):
+        """Test that package and adapter names follow the documented defaults."""
+        result = get_expected_project_structure("Synthetic-PPI data")
+
+        assert result["package_name"] == "synthetic_ppi_data"
+        assert result["adapter_name"] == "synthetic_ppi_data_adapter"
+
+    def test_expected_structure_respects_options(self):
+        """Test that opted-out Docker and test files are not listed."""
+        expected = get_expected_project_structure(
+            "demo", include_docker="n", include_tests="n"
+        )["expected_structure"]
+
+        assert "Dockerfile" not in expected["files"]
+        assert "config/biocypher_config.docker.yaml" not in expected["files"]
+        assert "tests/" not in expected["directories"]
+        assert not any(f.startswith("tests/") for f in expected["files"])
+
+    def test_expected_structure_does_not_claim_to_check(self):
+        """Test that the tool says it cannot see the file system."""
+        result = get_expected_project_structure()
+
+        assert "exists" not in result
+        assert "project_path" not in result
+        assert "cannot see your file system" in result["how_to_check"]
+        assert result["template_version"] == TEMPLATE_COMMIT
 
     def test_get_cookiecutter_instructions_structure(self):
         """Test that get_cookiecutter_instructions returns the expected structure."""
