@@ -11,6 +11,9 @@ from fastmcp import FastMCP
 # the example biocypher/_config/test_schema_config.yaml). The rules below mirror
 # how BioCypher's mapping module parses and validates a schema_config.yaml.
 
+# The cookiecutter template all project scaffolding is based on.
+TEMPLATE_URL = "https://github.com/biocypher/biocypher-cookiecutter-template"
+
 # Fields BioCypher recognises in a schema config entry.
 _KNOWN_SCHEMA_FIELDS = {
     "represented_as",
@@ -732,14 +735,14 @@ def check_project_exists(project_path: str = ".") -> Dict[str, Any]:
         "If the project does NOT exist at this location, you MUST use cookiecutter to create it. "
         "Do NOT manually create files or directories. "
         "Call get_cookiecutter_instructions() to get the exact commands needed, "
-        "then run cookiecutter with the template URL: https://github.com/biocypher/biocypher-cookiecutter-template.git"
+        f"then run cookiecutter with the template URL: {TEMPLATE_URL}"
     )
 
     return {
         "project_path": str(path),
         "expected_structure": expected_structure,
         "instruction_if_not_exists": instruction_if_not_exists,
-        "cookiecutter_template_url": "https://github.com/biocypher/biocypher-cookiecutter-template",
+        "cookiecutter_template_url": TEMPLATE_URL,
     }
 
 
@@ -748,15 +751,21 @@ def get_cookiecutter_instructions() -> Dict[str, Any]:
     Provides instructions on how to create a BioCypher project using cookiecutter.
 
     This function informs users how to install cookiecutter (if not present) and
-    how to run it to create a new BioCypher project. It does not make assumptions
-    about directory structure or project name - the LLM should check with the user
-    for these details.
+    how to run it to create a new BioCypher project. Cookiecutter always runs
+    non-interactively: the project name is inferred from the user's request, and
+    the user is only asked for it if it cannot be inferred.
 
     Returns:
         Dict containing installation and usage instructions for cookiecutter
     """
     return {
-        "template_url": "https://github.com/biocypher/biocypher-cookiecutter-template",
+        "template_url": TEMPLATE_URL,
+        "prerequisites": {
+            "python": (
+                "Generated projects require Python >= 3.13 (requires-python in their "
+                "pyproject.toml). Make sure it is available before installing dependencies."
+            )
+        },
         "installation": {
             "description": "Install cookiecutter if not already installed",
             "methods": [
@@ -772,15 +781,16 @@ def get_cookiecutter_instructions() -> Dict[str, Any]:
             "description": "Run cookiecutter to create a new BioCypher project (always non-interactive; pre-fill everything you can)",
             "non_interactive_mode": {
                 "description": (
-                    "Determine sensible defaults for every cookiecutter prompt first. "
-                    "Only ask the user for values that cannot be inferred or that they explicitly want to control. "
-                    "After confirming any custom values, run cookiecutter with --no-input and pass key=value pairs "
-                    "for every prompt so no terminal interaction is required."
+                    "Use any values the user provided and the defaults below for everything else. "
+                    "Ask the user only if project_name cannot be inferred from their request; "
+                    "do not ask for confirmation of any other value. "
+                    "Run cookiecutter with --no-input and pass key=value pairs for every field "
+                    "so no terminal interaction is required."
                 ),
                 "default_context_strategy": [
                     {
                         "field": "project_name",
-                        "default": "Ask the user for their desired project/directory name (required).",
+                        "default": "Infer from the user's request (e.g. the data source name). Ask the user only if it cannot be inferred.",
                     },
                     {
                         "field": "package_name",
@@ -793,10 +803,13 @@ def get_cookiecutter_instructions() -> Dict[str, Any]:
                     },
                     {
                         "field": "data_source_type",
-                        "default": '"file" unless the user indicates api/database/custom.',
+                        "default": (
+                            '"file" unless the user indicates api/database/custom. '
+                            "This is a label only: it changes text in the generated project, not the adapter."
+                        ),
                     },
                     {
-                        "field": "include_docker / include_tests / schema_config",
+                        "field": "include_docker / include_tests",
                         "default": '"y" unless the user requests otherwise.',
                     },
                     {
@@ -812,13 +825,12 @@ def get_cookiecutter_instructions() -> Dict[str, Any]:
                     "data_source_type",
                     'include_docker ("y" or "n")',
                     'include_tests ("y" or "n")',
-                    'schema_config ("y" or "n")',
                     "author_name",
                     "author_email",
                     "version",
                 ],
                 "command_template": (
-                    "cookiecutter https://github.com/biocypher/biocypher-cookiecutter-template.git "
+                    f"cookiecutter {TEMPLATE_URL} "
                     "--no-input "
                     'project_name="{project_name}" '
                     'project_description="{project_description}" '
@@ -827,15 +839,12 @@ def get_cookiecutter_instructions() -> Dict[str, Any]:
                     'data_source_type="{data_source_type}" '
                     'include_docker="{include_docker}" '
                     'include_tests="{include_tests}" '
-                    'schema_config="{schema_config}" '
                     'author_name="{author_name}" '
                     'author_email="{author_email}" '
                     'version="{version}"'
                 ),
                 "notes": [
-                    "Pre-fill defaults and only ask the user for fields that cannot be inferred or that they want to customize.",
-                    "Confirm the final context before running the command.",
-                    "Never run interactive cookiecutter prompts; always provide the complete context yourself.",
+                    "Never run interactive cookiecutter prompts; always provide the complete context yourself."
                 ],
             },
         },
@@ -845,12 +854,12 @@ def get_cookiecutter_instructions() -> Dict[str, Any]:
                 "Navigate to the created project directory",
                 "Install dependencies (e.g., 'uv sync' or 'poetry install')",
                 "Review and customize the generated files",
-                "Implement your adapter in src/<project_name>/adapters/",
+                "Implement your adapter in src/<package_name>/adapters/<adapter_name>.py",
             ],
         },
         "important_notes": [
-            "Ask the user for the desired project name and location before running cookiecutter",
-            "The cookiecutter template will prompt for various configuration options",
+            "Create the project in the current working directory unless the user names another location",
+            "The generated adapter yields dummy data for every data_source_type; implement it for your data source",
             "More information can be found in the cookiecutter README at the template URL",
         ],
     }

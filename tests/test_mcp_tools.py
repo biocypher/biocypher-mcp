@@ -2,6 +2,9 @@
 Tests for the BioCypher MCP tool functionality.
 """
 
+import json
+import re
+
 import sys
 from pathlib import Path
 
@@ -9,6 +12,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from biocypher_mcp.main import (
+    TEMPLATE_URL,
     get_available_workflows,
     get_adapter_creation_workflow,
     get_phase_guidance,
@@ -528,6 +532,64 @@ class TestProjectCreation:
         method_names = [m["method"] for m in methods]
         assert "pip" in method_names
         assert "cookiecutter" in methods[0]["command"]
+
+    def test_cookiecutter_user_interaction_policy_is_consistent(self):
+        """Test that the instructions only ask for a project name that cannot be inferred."""
+        result = get_cookiecutter_instructions()
+        mode = result["usage"]["non_interactive_mode"]
+        text = json.dumps(result).lower()
+
+        assert "ask the user only if" in mode["description"].lower()
+        assert "confirm the final context" not in text
+        assert "will prompt" not in text
+        assert "before running cookiecutter" not in text
+
+    def test_cookiecutter_next_steps_use_package_name(self):
+        """Test that the adapter path uses package_name, not project_name."""
+        next_steps = get_cookiecutter_instructions()["expected_output"]["next_steps"]
+
+        assert "src/<package_name>/adapters/<adapter_name>.py" in " ".join(next_steps)
+        assert "src/<project_name>" not in " ".join(next_steps)
+
+    def test_template_url_has_one_form(self):
+        """Test that both project tools use the same template URL."""
+        instructions = get_cookiecutter_instructions()
+        structure = check_project_exists()
+        command = instructions["usage"]["non_interactive_mode"]["command_template"]
+
+        assert instructions["template_url"] == TEMPLATE_URL
+        assert structure["cookiecutter_template_url"] == TEMPLATE_URL
+        assert command.startswith(f"cookiecutter {TEMPLATE_URL} ")
+        assert f"{TEMPLATE_URL}.git" not in json.dumps([instructions, structure])
+
+    def test_data_source_type_is_described_as_label(self):
+        """Test that data_source_type is not presented as changing the adapter."""
+        fields = get_cookiecutter_instructions()["usage"]["non_interactive_mode"][
+            "default_context_strategy"
+        ]
+        field = next(f for f in fields if f["field"] == "data_source_type")
+
+        assert "label only" in field["default"]
+
+    def test_schema_config_is_not_a_template_option(self):
+        """Test that schema_config, which the template does not have, is not offered."""
+        mode = get_cookiecutter_instructions()["usage"]["non_interactive_mode"]
+
+        assert "schema_config" not in json.dumps(mode)
+
+    def test_command_template_matches_required_context(self):
+        """Test that the command passes exactly the fields listed as required."""
+        mode = get_cookiecutter_instructions()["usage"]["non_interactive_mode"]
+        placeholders = set(re.findall(r"\{(\w+)\}", mode["command_template"]))
+        required = {field.split()[0] for field in mode["required_context"]}
+
+        assert placeholders == required
+
+    def test_python_prerequisite_is_stated(self):
+        """Test that the Python version the template requires is stated."""
+        prerequisites = get_cookiecutter_instructions()["prerequisites"]
+
+        assert "3.13" in prerequisites["python"]
 
 
 VALID_SCHEMA = """
