@@ -10,7 +10,7 @@ An MCP (Model Context Protocol) server for assisting with BioCypher workflows. T
 - **Streamable HTTP Transport**: Full MCP protocol support with Server-Sent Events (SSE)
 - **Hierarchical Tool Structure**: Navigate through BioCypher workflows with structured guidance
 - **BioCypher Adapter Creation Workflow**: Complete 5-phase framework for creating adapters from any data source
-- **Project Creation Guidance**: Verify existing directories and get scripted cookiecutter instructions
+- **Project Creation Guidance**: Get the expected project layout and scripted cookiecutter instructions
 - **Adaptive Implementation Process**: Step-by-step guidance for analyzing data sources and implementing appropriate adapter strategies
 - **Implementation Patterns**: Reusable patterns for field mapping, conditional extraction, and progressive fallback
 - **Decision Guidance**: AI-powered recommendations based on data characteristics
@@ -115,12 +115,14 @@ The MCP server provides the following tools:
 - **`get_decision_guidance`** - Get AI-powered recommendations based on data characteristics
 
 ### Project Creation Tools
-- **`check_project_exists`** - Show the expected cookiecutter layout and instructions for handling missing projects
+- **`get_expected_project_structure`** - Show the layout the cookiecutter template generates for your project names and options. It cannot see your file system, so compare the layout with your own files
 - **`get_cookiecutter_instructions`** - Provide scripted, non-interactive cookiecutter commands and defaults
+- **`check_project_exists`** - Deprecated alias for `get_expected_project_structure`, which will be removed
 
 ### Configuration Tools
 - **`get_schema_configuration_guidance`** - Get guidance on BioCypher schema configuration
 - **`get_resource_management_guidance`** - Get guidance on resource management and caching
+- **`get_biocypher_docs`** - Get a BioCypher guide for AI assistants by topic (`index`, `adapters`, `schema_config`, `biocypher_config`, `pitfalls`). Served from a snapshot pinned to a BioCypher commit, so no network access is needed
 - **`validate_schema_config`** - Validate a `schema_config.yaml` against the official BioCypher schema configuration rules (from [biocypher/biocypher](https://github.com/biocypher/biocypher)). Accepts a file path or raw YAML content and reports blocking errors (e.g. invalid `represented_as`, inheritance loops, mismatched list lengths that silently drop data) and warnings (typos in field names, deprecated fields, missing `input_label`).
 
 ## API Endpoints
@@ -154,10 +156,10 @@ The web server provides REST API endpoints for traditional HTTP clients:
 ### Preparing a BioCypher Project
 
 ```python
-from biocypher_mcp.main import check_project_exists, get_cookiecutter_instructions
+from biocypher_mcp.main import get_cookiecutter_instructions, get_expected_project_structure
 
-# Inspect the expected cookiecutter layout for your target directory
-structure = check_project_exists("/path/to/project")
+# Inspect the layout the template generates for your project
+structure = get_expected_project_structure("my-project")
 print(structure["expected_structure"])
 print(structure["instruction_if_not_exists"])
 
@@ -187,6 +189,29 @@ uv sync --dev
 
 # Run tests
 uv run pytest tests/ -v
+
+# Check the expected project layout and the BioCypher guides against their pins (needs network access)
+uv run pytest tests/ -m network
+```
+
+### Updating the BioCypher guides
+
+`get_biocypher_docs` serves the BioCypher guides for AI assistants from a snapshot in `src/biocypher_mcp/knowledge/`, so the server needs no network access and every run gets the same content. The guides are owned by [biocypher/biocypher](https://github.com/biocypher/biocypher) (`docs/agents/`), and the snapshot is pinned to the commit in `BIOCYPHER_DOCS_REF` (`src/biocypher_mcp/biocypher_docs.py`). To update it, change `BIOCYPHER_DOCS_REF`, then run:
+
+```bash
+uv run python scripts/sync_biocypher_docs.py
+uv run pytest tests/test_biocypher_docs.py -m "network or not network"
+```
+
+The script downloads the guides at that commit and rewrites links between them into `get_biocypher_docs` calls. Commit the changed files in `knowledge/`.
+
+### Linting
+
+Linting and formatting run through [pre-commit](https://pre-commit.com), which pins its own ruff version:
+
+```bash
+pre-commit install
+pre-commit run --all-files
 ```
 
 ### Architecture

@@ -1,0 +1,74 @@
+# BioCypher
+
+> BioCypher is a Python framework that turns heterogeneous biomedical data into ontology-grounded knowledge graphs. User code ("adapters") yields node and edge tuples; a YAML schema configuration maps them to ontology classes; BioCypher translates, deduplicates and writes them to a graph database, files, or an in-memory object.
+
+Checked against BioCypher 0.17.0. These files are written for AI coding assistants: plain Markdown, one topic per file, no site markup. Each file is self-contained; read only the ones the task needs.
+
+## Topic files
+
+- Adapters (get_biocypher_docs(topic="adapters")): the adapter interface, node and edge tuple formats, how BioCypher consumes them, and how to test an adapter.
+- Schema configuration (get_biocypher_docs(topic="schema_config")): `schema_config.yaml` fields, valid values, inheritance, and the rules that silently drop data when violated.
+- BioCypher configuration (get_biocypher_docs(topic="biocypher_config")): `biocypher_config.yaml`, how it is loaded and merged, output backends (`dbms`), offline/online mode, headless mode.
+- Pitfalls (get_biocypher_docs(topic="pitfalls")): known bugs and surprising behaviour in the current release, with workarounds.
+- [Example adapter](https://biocypher.org/BioCypher/agents/llms-example-adapter.txt): a complete, runnable project (data, schema, config, adapter, build script) and its verified output.
+
+## Core facts
+
+- Node tuple: `(node_id, input_label, properties)` — 3 elements.
+- Edge tuple: `(edge_id, source_id, target_id, input_label, properties)` — 5 elements; `edge_id` may be `None`. The label is the 4th element, not the 2nd.
+- The label in each tuple must equal an `input_label` in `schema_config.yaml`. Tuples with unknown labels are dropped (logged as an error, the run continues).
+- Only properties declared in the schema are kept; declared properties missing from a tuple are written as empty (`None`).
+- Duplicate node IDs: the first occurrence wins, later ones are dropped without comparing properties. Edges without an `edge_id` are deduplicated by type, source and target, so parallel edges of one type need distinct `edge_id`s.
+- There is no `bc.write()` method. Use `bc.write_nodes(...)` and `bc.write_edges(...)` (offline files or online database) or `bc.add(...)` plus `bc.get_kg()` (in-memory).
+
+## Minimal pipeline
+
+```python
+from biocypher import BioCypher
+
+bc = BioCypher(
+    biocypher_config_path="config/biocypher_config.yaml",
+    schema_config_path="config/schema_config.yaml",
+)
+adapter = MyAdapter(...)
+bc.write_nodes(adapter.get_nodes())
+bc.write_edges(adapter.get_edges())
+bc.write_import_call()  # offline mode only: writes the import script for the target DBMS
+```
+
+## Starting a new project
+
+Use the cookiecutter template (https://github.com/biocypher/biocypher-cookiecutter-template). It generates `create_knowledge_graph.py`, `config/biocypher_config.yaml`, `config/schema_config.yaml`, `src/<package_name>/adapters/<adapter_name>.py` and `tests/test_<adapter_name>.py`. The generated adapter yields dummy data and ignores its `data_source` argument until `get_nodes()` and `get_edges()` are rewritten; in a generated project, that file is the reference for the adapter structure.
+
+Run the template without prompts, so the command does not wait for input:
+
+```bash
+uvx cookiecutter gh:biocypher/biocypher-cookiecutter-template --no-input \
+    project_name=my-pipeline adapter_name=my_resource_adapter
+```
+
+- `package_name` is derived from `project_name` (`-` and spaces become `_`). Other keys: `project_description`, `data_source_type` (a label only; it does not change the generated code), `include_docker` and `include_tests` (`y`/`n`), `author_name`, `author_email`, `python_version`, `biocypher_version`.
+- The project is created in a new directory named `project_name` in the current directory; do not run the template over an existing project.
+- Prerequisites: the generated `pyproject.toml` requires Python >= 3.13 by default (`python_version`). With `biocypher_version=latest` (the default), the template asks PyPI for the newest BioCypher at generation time, so it needs network access, and the result depends on the day it runs.
+
+After generating the project:
+
+1. Point `data_source` in `create_knowledge_graph.py` to the real data (the default `data/your_data` does not exist).
+2. Replace the example classes in `config/schema_config.yaml` (`protein`, `gene`, `protein_encoded_by_gene`) with the types of your data.
+3. Rewrite `get_nodes()` and `get_edges()` to read `self.data_source`, and remove the dummy-data warning in the adapter's `__init__`.
+4. Replace the tests in `tests/`, which test the dummy data, with tests of your adapter's tuples (see the Adapters file, "Testing an adapter").
+5. `.gitignore` excludes `data/`, `output/` and `logs/`; input data placed in `data/` is not committed.
+
+The BioCypher MCP server (https://mcp.biocypher.org/mcp) provides step-by-step workflow guidance, the scripted cookiecutter command pinned to a tested template version, and `validate_schema_config`.
+
+## Alternative: in-memory Agent API
+
+For small graphs built interactively without YAML files, `biocypher.create_workflow()` returns a `BioCypherWorkflow` with `add_node()`, `add_edge()`, queries and JSON/NetworkX/pandas export. It is a separate API from the `BioCypher` class above. Guide: https://biocypher.org/BioCypher/learn/tutorials/agent_api_guide/
+
+## Human-oriented documentation
+
+- Schema configuration reference: https://biocypher.org/BioCypher/reference/schema-config/
+- BioCypher configuration reference: https://biocypher.org/BioCypher/reference/biocypher-config/
+- Output backends: https://biocypher.org/BioCypher/reference/outputs/
+- Download and cache API: https://biocypher.org/BioCypher/reference/source/download-cache/
+- Ontologies tutorial: https://biocypher.org/BioCypher/learn/tutorials/tutorial002_handling_ontologies/
