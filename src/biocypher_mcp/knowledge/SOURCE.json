@@ -1,0 +1,12 @@
+{
+  "repository": "biocypher/biocypher",
+  "ref": "2652a1f245e99447999b4187cacebcd0d2eb1094",
+  "path": "docs/agents",
+  "files": [
+    "llms-adapters.txt",
+    "llms-biocypher-config.txt",
+    "llms-pitfalls.txt",
+    "llms-schema-config.txt",
+    "llms.txt"
+  ]
+}
