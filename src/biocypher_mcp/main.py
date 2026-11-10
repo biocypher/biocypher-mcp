@@ -19,6 +19,16 @@ TEMPLATE_URL = "https://github.com/biocypher/biocypher-cookiecutter-template"
 # gets the same scaffold; update it deliberately when the template changes.
 TEMPLATE_COMMIT = "115fce0837b0d81b96e58a5af9dca179b1174ec8"
 
+# The BioCypher guides for AI assistants, one topic per file. Sources live in
+# docs/agents/ of https://github.com/biocypher/biocypher.
+LLM_DOCS_URL = "https://biocypher.org/BioCypher/agents"
+LLM_DOCS_INDEX = f"{LLM_DOCS_URL}/llms.txt"
+LLM_DOCS_ADAPTERS = f"{LLM_DOCS_URL}/llms-adapters.txt"
+LLM_DOCS_SCHEMA_CONFIG = f"{LLM_DOCS_URL}/llms-schema-config.txt"
+LLM_DOCS_BIOCYPHER_CONFIG = f"{LLM_DOCS_URL}/llms-biocypher-config.txt"
+LLM_DOCS_PITFALLS = f"{LLM_DOCS_URL}/llms-pitfalls.txt"
+LLM_DOCS_EXAMPLE = f"{LLM_DOCS_URL}/llms-example-adapter.txt"
+
 # Fields BioCypher recognises in a schema config entry.
 _KNOWN_SCHEMA_FIELDS = {
     "represented_as",
@@ -98,13 +108,17 @@ def get_adapter_creation_workflow() -> Dict[str, Any]:
         "name": "BioCypher Adapter Creation Workflow",
         "description": "Complete workflow for creating BioCypher adapters from any data source",
         "llm_documentation": {
-            "primary_reference": "https://biocypher.org/BioCypher/llms.txt",
-            "adapter_guide": "https://biocypher.org/BioCypher/llms-adapters.txt - Complete guide for creating BioCypher adapters",
-            "example_adapter": "https://biocypher.org/BioCypher/llms-example-adapter.txt - Full working example of a GEO adapter",
+            "primary_reference": f"{LLM_DOCS_INDEX} - Index, core facts and a minimal pipeline",
+            "adapter_guide": f"{LLM_DOCS_ADAPTERS} - Node/edge tuple formats, filtering and deduplication, downloads, testing an adapter",
+            "schema_config_guide": f"{LLM_DOCS_SCHEMA_CONFIG} - schema_config.yaml fields, class naming, strict mode",
+            "biocypher_config_guide": f"{LLM_DOCS_BIOCYPHER_CONFIG} - biocypher_config.yaml loading, output backends, offline/online mode",
+            "pitfalls": f"{LLM_DOCS_PITFALLS} - Known bugs, silent data loss, APIs that do not exist",
+            "example_adapter": f"{LLM_DOCS_EXAMPLE} - Complete runnable CSV project with its verified output",
             "key_sections": [
-                "Adapters section - Interface, node/edge formats",
-                "Common Patterns > Adapter Patterns",
-                "Data Processing - Node/edge creation formats",
+                "llms-adapters.txt > Node tuple, Edge tuple",
+                "llms-adapters.txt > How BioCypher consumes tuples",
+                "llms-adapters.txt > Writing an adapter",
+                "llms-pitfalls.txt > Silent data loss",
             ],
         },
         "phases": [
@@ -185,8 +199,8 @@ def get_phase_guidance(phase_number: int) -> Dict[str, Any]:
     Provides detailed guidance for a specific phase of the adapter creation workflow.
 
     For implementation code examples and patterns, refer to the BioCypher LLM documentation:
-    - https://biocypher.org/BioCypher/llms-adapters.txt (adapter guide)
-    - https://biocypher.org/BioCypher/llms-example-adapter.txt (working example)
+    - https://biocypher.org/BioCypher/agents/llms-adapters.txt (adapter guide)
+    - https://biocypher.org/BioCypher/agents/llms-example-adapter.txt (working example)
 
     Args:
         phase_number: The phase number (1-5) to get guidance for
@@ -246,7 +260,7 @@ def assess_schema_requirements(data_analysis, existing_schema=None):
                 "Structure analysis report",
                 "Schema requirements assessment",
             ],
-            "llm_documentation_reference": "For adapter interface details and data formats, see https://biocypher.org/BioCypher/llms-adapters.txt",
+            "llm_documentation_reference": f"For adapter interface details and data formats, see {LLM_DOCS_ADAPTERS}",
         },
         2: {
             "phase_name": "Implementation Strategy Design",
@@ -304,7 +318,7 @@ def design_extraction_strategy(data_analysis):
                 "Architecture choice (Simple/Series/Hierarchical/Custom)",
                 "Extraction strategy document",
             ],
-            "llm_documentation_reference": "For adapter patterns and implementation strategies, see https://biocypher.org/BioCypher/llms.txt > Common Patterns > Adapter Patterns",
+            "llm_documentation_reference": f"For adapter patterns and implementation strategies, see {LLM_DOCS_ADAPTERS} > Writing an adapter",
         },
         3: {
             "phase_name": "Implementation",
@@ -358,7 +372,7 @@ def map_fields_to_schema(self, data_item, field_mapping):
 """,
             },
             "outputs_expected": ["Working adapter code", "Field mapping configuration"],
-            "llm_documentation_reference": "For implementation details, node/edge formats, and working examples, see https://biocypher.org/BioCypher/llms-example-adapter.txt and https://biocypher.org/BioCypher/llms-adapters.txt",
+            "llm_documentation_reference": f"For implementation details, node/edge formats, and working examples, see {LLM_DOCS_EXAMPLE} and {LLM_DOCS_ADAPTERS}; check the code against {LLM_DOCS_PITFALLS}",
         },
         4: {
             "phase_name": "Quality Assurance",
@@ -456,9 +470,9 @@ def get_implementation_patterns(pattern_type: Optional[str] = None) -> Dict[str,
     Provides implementation patterns for different data scenarios.
 
     For comprehensive adapter patterns and working examples, refer to:
-    - https://biocypher.org/BioCypher/llms.txt > Common Patterns > Adapter Patterns
-    - https://biocypher.org/BioCypher/llms-adapters.txt (complete adapter guide)
-    - https://biocypher.org/BioCypher/llms-example-adapter.txt (working GEO adapter example)
+    - https://biocypher.org/BioCypher/agents/llms-adapters.txt (complete adapter guide)
+    - https://biocypher.org/BioCypher/agents/llms-example-adapter.txt (complete runnable CSV project)
+    - https://biocypher.org/BioCypher/agents/llms-pitfalls.txt (known bugs and APIs that do not exist)
 
     Args:
         pattern_type: Optional specific pattern type to retrieve
@@ -624,8 +638,8 @@ def get_schema_configuration_guidance() -> Dict[str, Any]:
             "key_concept": "Uses input_label to map adapter outputs to schema concepts",
         },
         "llm_documentation": {
-            "primary_reference": "https://biocypher.org/BioCypher/llms.txt",
-            "schema_section": "Schema Configuration section in llms.txt",
+            "primary_reference": LLM_DOCS_SCHEMA_CONFIG,
+            "index": LLM_DOCS_INDEX,
             "details": [
                 "YAML-based schema definition",
                 "Defines node types, edge types, and their properties",
@@ -643,10 +657,11 @@ def get_schema_configuration_guidance() -> Dict[str, Any]:
             ],
             "additional_resources": [
                 "https://biocypher.org/BioCypher/learn/tutorials/tutorial002_handling_ontologies/",
-                "https://biocypher.org/BioCypher/llms-adapters.txt (for adapter examples)",
+                f"{LLM_DOCS_ADAPTERS} (for adapter examples)",
+                f"{LLM_DOCS_PITFALLS} (configuration surprises)",
             ],
         },
-        "note": "For detailed schema configuration examples and patterns, refer to the BioCypher LLM documentation at https://biocypher.org/BioCypher/llms.txt",
+        "note": f"For detailed schema configuration examples and patterns, refer to the BioCypher LLM documentation at {LLM_DOCS_SCHEMA_CONFIG}",
     }
 
 
@@ -666,12 +681,12 @@ def get_resource_management_guidance() -> Dict[str, Any]:
             "pipeline_position": "Beginning of project - data source acquisition",
         },
         "llm_documentation": {
-            "primary_reference": "https://biocypher.org/BioCypher/llms.txt",
-            "utility_functions_section": "Utility Functions > Download and Cache section in llms.txt",
+            "primary_reference": LLM_DOCS_ADAPTERS,
+            "download_section": "Downloading and caching source files section in llms-adapters.txt",
             "available_functions": [
-                "download_and_cache_file(): Download files with caching",
-                "download_and_cache_ftp(): FTP file downloads",
-                "download_and_cache_http(): HTTP file downloads",
+                "FileDownload(name, url_s, lifetime, is_dir): describe files to download",
+                "APIRequest(name, url_s, lifetime): describe API requests to cache",
+                "bc.download(resource): download (or reuse the cache) and return a list of local paths",
             ],
         },
         "quick_reference": {
@@ -682,10 +697,10 @@ def get_resource_management_guidance() -> Dict[str, Any]:
             "basic_usage": "Initialize Resource with name, URL(s), and lifetime. Use Downloader for managing downloads and caching.",
             "additional_resources": [
                 "https://biocypher.org/BioCypher/reference/source/download-cache/",
-                "https://biocypher.org/BioCypher/llms-adapters.txt (for adapter examples using resources)",
+                f"{LLM_DOCS_PITFALLS} (download APIs that do not exist, e.g. FileDownload.get())",
             ],
         },
-        "note": "For detailed resource management examples, code patterns, and API reference, refer to the BioCypher LLM documentation at https://biocypher.org/BioCypher/llms.txt",
+        "note": f"For detailed resource management examples, code patterns, and API reference, refer to the BioCypher LLM documentation at {LLM_DOCS_ADAPTERS}",
     }
 
 
